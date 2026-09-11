@@ -20,17 +20,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      STORY_PROVIDER: real
-      MEDIA_PROVIDER: real
-      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      STORY_PROVIDER: cloudflare
+      IMAGE_PROVIDER: huggingface
+      VOICE_PROVIDER: edge
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       STORY_MODEL: ${{ secrets.STORY_MODEL }}
       HF_TOKEN: ${{ secrets.HF_TOKEN }}
       IMAGE_MODEL: ${{ secrets.IMAGE_MODEL }}
-      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
-      ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
-      ELEVENLABS_MODEL: ${{ secrets.ELEVENLABS_MODEL }}
-      VOICE_NARRATOR: ${{ secrets.VOICE_NARRATOR }}
-      VOICE_MIRA: ${{ secrets.VOICE_MIRA }}
+      EDGE_VOICE_NARRATOR: ${{ secrets.EDGE_VOICE_NARRATOR }}
+      EDGE_VOICE_MIRA: ${{ secrets.EDGE_VOICE_MIRA }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -46,7 +45,7 @@ jobs:
           GENRE: ${{ inputs.genre }}
           DURATION: ${{ inputs.duration }}
         run: |
-          node -e "const fs=require('fs'); const x={title:process.env.STORY,genre:process.env.GENRE,durationSeconds:Number(process.env.DURATION),providers:{story:'real'}}; fs.writeFileSync('stories/run.json',JSON.stringify(x,null,2));"
+          node -e "const fs=require('fs'); const x={title:process.env.STORY,genre:process.env.GENRE,durationSeconds:Number(process.env.DURATION)}; fs.writeFileSync('stories/run.json',JSON.stringify(x,null,2));"
       - name: Build MP4
         run: npm run render -- stories/run.json
       - name: Upload result
