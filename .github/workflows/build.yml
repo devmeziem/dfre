@@ -34,6 +34,7 @@ env:
   IMAGE_HEIGHT: 1344
   STORY_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
   EDGE_TTS_LANG: 'en-US'
+  EDGE_TTS_TIMEOUT_MS: 60000
   EDGE_TTS_RATE: 'default'
   EDGE_TTS_VOLUME: 'default'
   EDGE_TTS_PITCH: 'default'
