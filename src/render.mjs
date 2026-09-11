@@ -16,7 +16,7 @@ export async function renderVideo(plan, assets, output = 'output/final.mp4') {
     if (audio.length === 1) audioPath = audio[0];
     if (audio.length > 1) { const list = path.join(work, `${asset.sceneId}-audio.txt`); await fs.writeFile(list, audio.map(p => `file '${path.resolve(p).replaceAll("'", "'\\''")}'`).join('\n')); audioPath = path.join(work, `${asset.sceneId}-audio.mp3`); await runFfmpeg(['-f','concat','-safe','0','-i',list,'-c:a','libmp3lame',audioPath]); }
     const clip = path.join(work, `${asset.sceneId}.mp4`); const vf = `scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,subtitles='${filterPath(srt)}'`; const args = ['-loop','1','-i',asset.imagePath];
-    if (audioPath) args.push('-i',audioPath); args.push('-t',String(asset.duration),'-vf',vf,'-r','30','-c:v','libx264','-pix_fmt','yuv420p'); if (audioPath) args.push('-c:a','aac','-shortest'); else args.push('-an'); args.push(clip); await runFfmpeg(args); clips.push(clip);
+    if (audioPath) args.push('-i',audioPath); args.push('-t',String(asset.duration),'-vf',vf,'-r','30','-c:v','libx264','-pix_fmt','yuv420p'); if (audioPath) args.push('-c:a','aac'); else args.push('-an'); args.push(clip); await runFfmpeg(args); clips.push(clip);
   }
   if (!clips.length) throw new Error('No scenes to render'); const concat = path.join(work,'concat.txt'); await fs.writeFile(concat, clips.map(p => `file '${path.resolve(p).replaceAll("'", "'\\''")}'`).join('\n')); await runFfmpeg(['-f','concat','-safe','0','-i',concat,'-c','copy',output]); return output;
 }
