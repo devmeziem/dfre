@@ -30,8 +30,8 @@ env:
   CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   CLOUDFLARE_IMAGE_MODEL: '@cf/black-forest-labs/flux-2-klein-4b'
   CLOUDFLARE_IMAGE_TIMEOUT_SECONDS: 180
-  IMAGE_WIDTH: 768
-  IMAGE_HEIGHT: 1344
+  IMAGE_WIDTH: 512
+  IMAGE_HEIGHT: 896
   STORY_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
   EDGE_TTS_LANG: 'en-US'
   EDGE_TTS_RATE: 'default'
