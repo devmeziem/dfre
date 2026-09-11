@@ -7,7 +7,7 @@ export async function buildPlan(inputFile) {
   const idea = JSON.parse(raw);
   const provider = getProvider(idea.providers?.story || 'mock');
   const project = await provider.story(idea);
-  return { ...project, format: 'vertical', width: 1080, height: 1920 };
+  return { ...project, format: 'vertical', width: 1080, height: 1920, fps: 30 };
 }
 
 export async function prepareAssets(plan, outDir) {
@@ -15,8 +15,7 @@ export async function prepareAssets(plan, outDir) {
   const provider = getProvider('mock');
   const assets = [];
   for (const scene of plan.scenes) {
-    const image = await provider.image(scene.imagePrompt);
-    assets.push({ sceneId: scene.id, image });
+    assets.push({ sceneId: scene.id, image: await provider.image(scene.imagePrompt) });
     for (const line of scene.lines || []) {
       assets.push({ sceneId: scene.id, voice: await provider.voice(line.text, line.voice || 'narrator') });
     }
