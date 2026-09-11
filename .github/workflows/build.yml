@@ -1,5 +1,8 @@
 name: build
+
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
     inputs:
       story:
@@ -14,8 +17,10 @@ on:
         description: 'Target duration in seconds'
         required: false
         default: '45'
+
 permissions:
   contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,22 +36,28 @@ jobs:
       IMAGE_MODEL: ${{ secrets.IMAGE_MODEL }}
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
       - name: Install dependencies
         run: npm install
+
       - name: Write run idea
         env:
-          STORY: ${{ inputs.story }}
-          GENRE: ${{ inputs.genre }}
-          DURATION: ${{ inputs.duration }}
+          STORY: ${{ inputs.story || 'The Last Signal' }}
+          GENRE: ${{ inputs.genre || 'mystery' }}
+          DURATION: ${{ inputs.duration || '45' }}
         run: |
           node -e "const fs=require('fs'); const x={title:process.env.STORY,genre:process.env.GENRE,durationSeconds:Number(process.env.DURATION)}; fs.writeFileSync('stories/run.json',JSON.stringify(x,null,2));"
+
       - name: Build MP4
         run: npm run render -- stories/run.json
+
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
