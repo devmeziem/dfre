@@ -15,5 +15,21 @@ export async function generateStory(input, env = process.env) {
   const data = await response.json();
   const content = data.result?.choices?.[0]?.message?.content ?? data.result?.response ?? data.choices?.[0]?.message?.content;
   if (!content) throw new Error('Cloudflare story provider returned no content');
-  return JSON.parse(content.replace(/^```json\s*|\s*```$/g, ''));
+
+  const text = String(content).trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end <= start) throw new Error(`Cloudflare story provider returned no JSON object: ${text.slice(0, 500)}`);
+
+  const jsonText = text.slice(start, end + 1);
+  let story;
+  try {
+    story = JSON.parse(jsonText);
+  } catch (error) {
+    throw new Error(`Cloudflare story provider returned invalid JSON: ${error.message}. Response: ${jsonText.slice(0, 1000)}`);
+  }
+  if (!story || typeof story !== 'object' || !Array.isArray(story.scenes)) {
+    throw new Error('Cloudflare story provider returned JSON without a scenes array');
+  }
+  return story;
 }
