@@ -25,7 +25,7 @@ async function cloudflareImage(fields, env) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), Math.max(30, Number(env.CLOUDFLARE_IMAGE_TIMEOUT_SECONDS || 180)) * 1000);
   try {
-    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/${encodeURIComponent(model)}`, {
+    const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/${model}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
       body: form,
@@ -36,7 +36,7 @@ async function cloudflareImage(fields, env) {
       const detail = data.errors?.map((e) => e.message).join('; ') || `HTTP ${response.status}`;
       throw new Error(detail);
     }
-    const encoded = data.result?.image;
+    const encoded = typeof data.result === 'string' ? data.result : data.result?.image;
     if (!encoded) throw new Error('Cloudflare returned no image data');
     return Buffer.from(String(encoded).replace(/^data:image\/[^;]+;base64,/, ''), 'base64');
   } finally {
