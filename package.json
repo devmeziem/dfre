@@ -1,0 +1,11 @@
+{
+  "name": "dfre-pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "validate": "node scripts/validate.mjs",
+    "plan": "node scripts/plan.mjs",
+    "render": "node scripts/render.mjs"
+  }
+}
