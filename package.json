@@ -9,6 +9,7 @@
     "render": "node scripts/render.mjs"
   },
   "dependencies": {
+    "@huggingface/inference": "4.13.28",
     "node-edge-tts": "1.2.10"
   }
 }
