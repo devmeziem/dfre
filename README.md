@@ -2,19 +2,21 @@
 
 A modular media-generation pipeline for short-form projects.
 
-## V1
-- Generate original stories and scripts
-- Break stories into scenes
-- Define recurring characters
-- Generate scene images through a provider adapter
-- Generate separate voices for characters and narration
-- Build timed captions
-- Assemble a vertical 9:16 MP4
+## V1 pipeline
+`idea -> story -> scenes -> images -> voices -> captions -> 9:16 MP4`
 
-The system is provider-independent so image, voice, and story services can be replaced later.
+The project supports original multi-scene stories, recurring characters, separate character/narrator voices, timed burned-in captions, and 1080x1920 video output. Provider adapters keep the generation services replaceable.
 
-## Planned flow
-`idea -> story -> scenes -> images -> voices -> captions -> render`
+## GitHub Actions
+Run **Actions → build → Run workflow** and enter an optional story, genre, and duration. The finished `final.mp4` is uploaded as the `final-video` artifact.
 
-## Development
-V1 is designed to run locally or in CI. Provider credentials are supplied through environment variables/secrets and are never committed to the repository.
+Add these repository secrets before using the real providers:
+- `OPENROUTER_API_KEY`
+- `HF_TOKEN`
+- `ELEVENLABS_API_KEY`
+- `ELEVENLABS_VOICE_ID` (fallback voice)
+- `VOICE_NARRATOR` and any `VOICE_<SPEAKER>` values used by stories
+
+Optional model secrets: `STORY_MODEL`, `IMAGE_MODEL`, `ELEVENLABS_MODEL`.
+
+The default demo provider is mock; real CI runs select the real providers through environment variables. Never commit API keys or generated credentials.
