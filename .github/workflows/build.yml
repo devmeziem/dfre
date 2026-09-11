@@ -16,62 +16,56 @@ on:
       duration:
         description: 'Target duration in seconds'
         required: false
-        default: '45'
+        default: '60'
 
 permissions:
   contents: read
+
+env:
+  STORY_PROVIDER: cloudflare
+  MEDIA_PROVIDER: real
+  IMAGE_PROVIDER: cloudflare
+  VOICE_PROVIDER: edge
+  CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  CLOUDFLARE_IMAGE_MODEL: '@cf/black-forest-labs/flux-2-klein-4b'
+  CLOUDFLARE_IMAGE_TIMEOUT_SECONDS: 180
+  IMAGE_WIDTH: 768
+  IMAGE_HEIGHT: 1344
+  STORY_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
+  EDGE_TTS_LANG: 'en-US'
+  EDGE_TTS_RATE: 'default'
+  EDGE_TTS_VOLUME: 'default'
+  EDGE_TTS_PITCH: 'default'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      STORY_PROVIDER: cloudflare
-      MEDIA_PROVIDER: real
-      IMAGE_PROVIDER: huggingface
-      VOICE_PROVIDER: edge
-      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      HF_TIMEOUT_SECONDS: 180
-      HF_REFERENCE_PROVIDER: nscale
-      HF_IMAGE_PROVIDER: fal-ai
-      IMAGE_REFERENCE_MODEL: black-forest-labs/FLUX.1-schnell
-      IMAGE_MODEL: black-forest-labs/FLUX.1-Kontext-dev
-      IMAGE_TEXT_MODEL: black-forest-labs/FLUX.1-schnell
-      STORY_MODEL: '@cf/meta/llama-3.3-70b-instruct-fp8-fast'
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
-
       - name: Install dependencies
         run: npm install
-
       - name: Validate pipeline
         run: npm run validate
-
       - name: Write run idea
         env:
           STORY: ${{ inputs.story || 'The Last Signal' }}
           GENRE: ${{ inputs.genre || 'mystery' }}
-          DURATION: ${{ inputs.duration || '45' }}
+          DURATION: ${{ inputs.duration || '60' }}
         run: |
           node -e "const fs=require('fs'); const x={title:process.env.STORY,genre:process.env.GENRE,durationSeconds:Number(process.env.DURATION)}; if(!Number.isFinite(x.durationSeconds)||x.durationSeconds<5||x.durationSeconds>120) throw new Error('Duration must be between 5 and 120 seconds'); fs.writeFileSync('stories/run.json',JSON.stringify(x,null,2));"
-
       - name: Build MP4
         run: npm run render -- stories/run.json
-
       - name: Verify output
         run: |
           test -s output/final.mp4
           ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/final.mp4
-
       - name: Upload result
         uses: actions/upload-artifact@v4
         with:
