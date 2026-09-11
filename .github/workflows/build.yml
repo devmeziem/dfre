@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       STORY_PROVIDER: cloudflare
+      MEDIA_PROVIDER: real
       IMAGE_PROVIDER: huggingface
       VOICE_PROVIDER: edge
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -28,8 +29,6 @@ jobs:
       STORY_MODEL: ${{ secrets.STORY_MODEL }}
       HF_TOKEN: ${{ secrets.HF_TOKEN }}
       IMAGE_MODEL: ${{ secrets.IMAGE_MODEL }}
-      EDGE_VOICE_NARRATOR: ${{ secrets.EDGE_VOICE_NARRATOR }}
-      EDGE_VOICE_MIRA: ${{ secrets.EDGE_VOICE_MIRA }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
