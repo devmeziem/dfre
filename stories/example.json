@@ -1,0 +1,23 @@
+{
+  "title": "The Last Signal",
+  "format": "short",
+  "aspectRatio": "9:16",
+  "scenes": [
+    {
+      "id": "s01",
+      "duration": 6,
+      "imagePrompt": "cinematic futuristic city at night, a young inventor standing beside a glowing communication tower, dramatic lighting, vertical composition",
+      "dialogue": [
+        {"speaker": "narrator", "text": "At midnight, the city received a signal no one expected."}
+      ]
+    },
+    {
+      "id": "s02",
+      "duration": 7,
+      "imagePrompt": "close cinematic view of the inventor looking at a small glowing device, rain on window, futuristic laboratory, vertical composition",
+      "dialogue": [
+        {"speaker": "inventor", "text": "That signal is coming from somewhere outside the city."}
+      ]
+    }
+  ]
+}
