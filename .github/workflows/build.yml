@@ -1,0 +1,57 @@
+name: build
+on:
+  workflow_dispatch:
+    inputs:
+      story:
+        description: 'Story idea or title'
+        required: false
+        default: 'The Last Signal'
+      genre:
+        description: 'Genre'
+        required: false
+        default: 'mystery'
+      duration:
+        description: 'Target duration in seconds'
+        required: false
+        default: '45'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      STORY_PROVIDER: real
+      MEDIA_PROVIDER: real
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      STORY_MODEL: ${{ secrets.STORY_MODEL }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      IMAGE_MODEL: ${{ secrets.IMAGE_MODEL }}
+      ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+      ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
+      ELEVENLABS_MODEL: ${{ secrets.ELEVENLABS_MODEL }}
+      VOICE_NARRATOR: ${{ secrets.VOICE_NARRATOR }}
+      VOICE_MIRA: ${{ secrets.VOICE_MIRA }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Install dependencies
+        run: npm install
+      - name: Write run idea
+        env:
+          STORY: ${{ inputs.story }}
+          GENRE: ${{ inputs.genre }}
+          DURATION: ${{ inputs.duration }}
+        run: |
+          node -e "const fs=require('fs'); const x={title:process.env.STORY,genre:process.env.GENRE,durationSeconds:Number(process.env.DURATION),providers:{story:'real'}}; fs.writeFileSync('stories/run.json',JSON.stringify(x,null,2));"
+      - name: Build MP4
+        run: npm run render -- stories/run.json
+      - name: Upload result
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-video
+          path: output/final.mp4
+          if-no-files-found: error
