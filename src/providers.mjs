@@ -4,7 +4,7 @@ import { generateVoice } from './providers/voice.mjs';
 
 export function getProvider(name = 'mock', env = process.env) {
   if (name === 'mock') return new MockProvider();
-  if (name === 'real') return new RealProvider(env);
+  if (name === 'real' || name === 'cloudflare') return new RealProvider(env);
   throw new Error(`Unknown provider: ${name}`);
 }
 
