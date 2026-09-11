@@ -35,18 +35,13 @@ function resolveVoice(line, voice, env) {
     : env[`EDGE_VOICE_${speakerKey.toUpperCase()}`] || DEFAULT_VOICES[requested.toLowerCase()] || DEFAULT_VOICES[speakerKey] || env.EDGE_VOICE_NARRATOR || DEFAULT_VOICES.narrator;
 }
 
-export async function generateVoice(line, voice, env = process.env) {
-  const provider = env.VOICE_PROVIDER || 'edge';
-  if (provider === 'mock') return { speaker: line.speaker, voice, text: line.text, audio: null };
-  if (provider !== 'edge') throw new Error(`Unsupported voice provider: ${provider}`);
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
-  const voiceId = resolveVoice(line, voice, env);
-  const profile = VOICE_PROFILES[voiceId] || { rate: env.EDGE_TTS_RATE || 'default', pitch: env.EDGE_TTS_PITCH || 'default' };
+async function attemptEdge(line, voiceId, profile, env, attempt) {
   const output = path.join(os.tmpdir(), `dfre-${randomUUID()}.mp3`);
   const timeout = Number(env.EDGE_TTS_TIMEOUT_MS || 60000);
-
   try {
-    console.log(`[TTS] Generating ${line.speaker} with ${voiceId} (${profile.rate}, ${profile.pitch})`);
+    console.log(`[TTS] Generating ${line.speaker} with ${voiceId} (${profile.rate}, ${profile.pitch})${attempt > 1 ? ` retry ${attempt - 1}` : ''}`);
     const tts = new EdgeTTS({
       voice: voiceId,
       lang: env.EDGE_TTS_LANG || 'en-US',
@@ -64,4 +59,24 @@ export async function generateVoice(line, voice, env = process.env) {
   } finally {
     await fs.rm(output, { force: true }).catch(() => {});
   }
+}
+
+export async function generateVoice(line, voice, env = process.env) {
+  const provider = env.VOICE_PROVIDER || 'edge';
+  if (provider === 'mock') return { speaker: line.speaker, voice, text: line.text, audio: null };
+  if (provider !== 'edge') throw new Error(`Unsupported voice provider: ${provider}`);
+
+  const voiceId = resolveVoice(line, voice, env);
+  const profile = VOICE_PROFILES[voiceId] || { rate: env.EDGE_TTS_RATE || 'default', pitch: env.EDGE_TTS_PITCH || 'default' };
+  let lastError;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      return await attemptEdge(line, voiceId, profile, env, attempt);
+    } catch (error) {
+      lastError = error;
+      console.warn(`[TTS] ${line.speaker} attempt ${attempt} failed: ${error?.message || error}`);
+      if (attempt < 2) await sleep(1500);
+    }
+  }
+  throw new Error(`TTS failed for ${line.speaker} after 2 attempts: ${lastError?.message || lastError}`);
 }
