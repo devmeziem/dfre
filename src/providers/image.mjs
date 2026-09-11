@@ -3,8 +3,15 @@ import { InferenceClient } from '@huggingface/inference';
 function makeClient(env) {
   const token = env.HF_TOKEN;
   if (!token) throw new Error('HF_TOKEN is required for the Hugging Face image provider');
-  const timeout = Number(env.HF_TIMEOUT_SECONDS || 180);
-  return new InferenceClient(token, { timeout });
+  return new InferenceClient(token);
+}
+
+function requestOptions(env) {
+  const seconds = Math.max(30, Number(env.HF_TIMEOUT_SECONDS || 120));
+  return {
+    signal: AbortSignal.timeout(seconds * 1000),
+    retry_on_error: false
+  };
 }
 
 async function toBuffer(blob) {
@@ -23,14 +30,16 @@ export async function generateCharacterReference(characters, env = process.env) 
 
   const hf = makeClient(env);
   const model = env.IMAGE_REFERENCE_MODEL || 'black-forest-labs/FLUX.1-schnell';
-  const providerName = env.HF_REFERENCE_PROVIDER || 'nscale';
+  const providerName = env.HF_REFERENCE_PROVIDER || 'fal-ai';
+  console.log(`[HF] Generating character reference with ${model} via ${providerName}`);
   try {
     const image = await hf.textToImage({
       provider: providerName,
       model,
       inputs: prompt,
       parameters: { width: 768, height: 1344 }
-    });
+    }, requestOptions(env));
+    console.log('[HF] Character reference generated');
     return { prompt, buffer: await toBuffer(image) };
   } catch (error) {
     throw new Error(`Hugging Face character reference generation failed (${providerName}/${model}): ${error.message}`);
@@ -47,6 +56,7 @@ export async function generateImage(scene, env = process.env) {
   const hf = makeClient(env);
   const model = env.IMAGE_MODEL || 'black-forest-labs/FLUX.1-Kontext-dev';
   const providerName = env.HF_IMAGE_PROVIDER || 'fal-ai';
+  console.log(`[HF] Generating ${scene.id} with ${model} via ${providerName}`);
   try {
     let image;
     if (scene.referenceBuffer) {
@@ -58,17 +68,18 @@ export async function generateImage(scene, env = process.env) {
           prompt,
           target_size: { width: 768, height: 1344 }
         }
-      });
+      }, requestOptions(env));
     } else {
       image = await hf.textToImage({
         provider: providerName,
         model: env.IMAGE_TEXT_MODEL || 'black-forest-labs/FLUX.1-schnell',
         inputs: prompt,
         parameters: { width: 768, height: 1344 }
-      });
+      }, requestOptions(env));
     }
+    console.log(`[HF] Image generated for ${scene.id}`);
     return { sceneId: scene.id, prompt, buffer: await toBuffer(image) };
   } catch (error) {
-    throw new Error(`Hugging Face image generation failed (${providerName}/${model}): ${error.message}`);
+    throw new Error(`Hugging Face image generation failed (${providerName}/${model}, scene ${scene.id}): ${error.message}`);
   }
 }
