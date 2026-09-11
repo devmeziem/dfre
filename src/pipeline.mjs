@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getProvider } from './providers.mjs';
+import { validateProject } from './schema.mjs';
 
 const CHARACTER_VOICES = [
   { female: 'en-US-AriaNeural', male: 'en-US-GuyNeural' },
@@ -14,6 +15,8 @@ export async function buildPlan(inputFile) {
   const idea = JSON.parse(raw);
   const provider = getProvider(idea.providers?.story || process.env.STORY_PROVIDER || 'mock');
   const project = await provider.story(idea);
+  validateProject(project);
+
   const characters = Array.isArray(project.characters) ? project.characters : [];
   const characterMap = new Map();
 
@@ -71,6 +74,8 @@ export async function prepareAssets(plan, outDir) {
       imagePath = path.join(outDir, `${scene.id}.png`);
       await fs.writeFile(imagePath, image.buffer);
     }
+    if (!imagePath) throw new Error(`Image provider returned no image for ${scene.id}`);
+
     const voices = [];
     for (let i = 0; i < (scene.dialogue || []).length; i++) {
       const line = scene.dialogue[i];
@@ -80,6 +85,7 @@ export async function prepareAssets(plan, outDir) {
         audioPath = path.join(outDir, `${scene.id}-${i + 1}.mp3`);
         await fs.writeFile(audioPath, voice.audioBuffer);
       }
+      if (scene.dialogue.length && !audioPath) throw new Error(`Voice provider returned no audio for ${scene.id} dialogue ${i + 1}`);
       voices.push({ ...voice, audioPath });
     }
     assets.push({ sceneId: scene.id, duration: scene.duration, imagePath, voices, characterIds: scene.characterIds || [] });
