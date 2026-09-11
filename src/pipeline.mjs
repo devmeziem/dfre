@@ -2,13 +2,58 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getProvider } from './providers.mjs';
 
+const CHARACTER_VOICES = [
+  { female: 'en-US-AriaNeural', male: 'en-US-GuyNeural' },
+  { female: 'en-US-JennyNeural', male: 'en-US-DavisNeural' },
+  { female: 'en-US-SaraNeural', male: 'en-US-JasonNeural' },
+  { female: 'en-US-MichelleNeural', male: 'en-US-TonyNeural' }
+];
+
 export async function buildPlan(inputFile) {
   const raw = await fs.readFile(inputFile, 'utf8');
   const idea = JSON.parse(raw);
   const provider = getProvider(idea.providers?.story || process.env.STORY_PROVIDER || 'mock');
   const project = await provider.story(idea);
-  const scenes = (project.scenes || []).map((scene, i) => ({ ...scene, id: scene.id || `s${i + 1}`, imagePrompt: scene.imagePrompt || scene.visual || '', dialogue: scene.dialogue || scene.lines || [] }));
-  return { ...project, scenes, format: 'vertical', width: 1080, height: 1920, fps: 30 };
+  const characters = Array.isArray(project.characters) ? project.characters : [];
+  const characterMap = new Map();
+
+  characters.forEach((character, index) => {
+    const gender = String(character.gender || '').toLowerCase() === 'male' ? 'male' : 'female';
+    const voices = CHARACTER_VOICES[index % CHARACTER_VOICES.length];
+    characterMap.set(String(character.name).toLowerCase(), {
+      ...character,
+      voice: voices[gender]
+    });
+  });
+
+  const characterBible = characters.map((character, index) => {
+    const mapped = characterMap.get(String(character.name).toLowerCase());
+    return `${mapped.name}: ${mapped.gender}; ${mapped.appearance}; voice=${mapped.voice}`;
+  }).join('\n');
+
+  const scenes = (project.scenes || []).map((scene, i) => {
+    const dialogue = (scene.dialogue || scene.lines || []).map((line) => {
+      const character = characterMap.get(String(line.speaker || '').toLowerCase());
+      return {
+        ...line,
+        voice: character?.voice || line.voice || CHARACTER_VOICES[0].female
+      };
+    });
+    const speakers = [...new Set(dialogue.map((line) => String(line.speaker || '').toLowerCase()))]
+      .map((name) => characterMap.get(name))
+      .filter(Boolean);
+    const sceneCharacters = speakers.length ? speakers : characters;
+    const continuity = sceneCharacters.map((character) => `${character.name}: ${character.appearance}`).join('; ');
+    const imagePrompt = `${scene.imagePrompt || scene.visual || ''}. CHARACTER CONTINUITY: ${continuity}. Keep each named character exactly the same person, gender, face, hair, skin tone, clothing identity and distinctive features. Do not introduce replacement people. Cinematic vertical composition, consistent character design, detailed lighting, 9:16.`;
+    return {
+      ...scene,
+      id: scene.id || `s${i + 1}`,
+      imagePrompt,
+      dialogue
+    };
+  });
+
+  return { ...project, characters, characterBible, scenes, format: 'vertical', width: 1080, height: 1920, fps: 30 };
 }
 
 export async function prepareAssets(plan, outDir) {
