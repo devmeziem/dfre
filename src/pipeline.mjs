@@ -57,6 +57,24 @@ export async function prepareAssets(plan, outDir) {
   const referencesDir = path.join(outDir, 'characters');
   await fs.mkdir(referencesDir, { recursive: true });
 
+  // Generate and validate every voice before spending any image-generation quota.
+  const voiceAssets = new Map();
+  let dialogueCount = 0;
+  for (const scene of plan.scenes) {
+    const voices = [];
+    for (let i = 0; i < (scene.dialogue || []).length; i++) {
+      const line = scene.dialogue[i];
+      dialogueCount++;
+      const voice = await mediaProvider.voice(line, line.voice || line.speaker || 'narrator');
+      if (!voice?.audioBuffer) throw new Error(`Voice provider returned no audio for ${scene.id} dialogue ${i + 1}`);
+      const audioPath = path.join(outDir, `${scene.id}-${i + 1}.mp3`);
+      await fs.writeFile(audioPath, voice.audioBuffer);
+      voices.push({ ...voice, audioPath });
+    }
+    voiceAssets.set(scene.id, voices);
+  }
+  console.log(`[TTS] All ${dialogueCount} dialogue lines completed; beginning image generation.`);
+
   let referenceBuffer = null;
   if (plan.characters?.length && typeof mediaProvider.characterReference === 'function') {
     const reference = await mediaProvider.characterReference(plan.characters);
@@ -75,20 +93,7 @@ export async function prepareAssets(plan, outDir) {
       await fs.writeFile(imagePath, image.buffer);
     }
     if (!imagePath) throw new Error(`Image provider returned no image for ${scene.id}`);
-
-    const voices = [];
-    for (let i = 0; i < (scene.dialogue || []).length; i++) {
-      const line = scene.dialogue[i];
-      const voice = await mediaProvider.voice(line, line.voice || line.speaker || 'narrator');
-      let audioPath = null;
-      if (voice.audioBuffer) {
-        audioPath = path.join(outDir, `${scene.id}-${i + 1}.mp3`);
-        await fs.writeFile(audioPath, voice.audioBuffer);
-      }
-      if (scene.dialogue.length && !audioPath) throw new Error(`Voice provider returned no audio for ${scene.id} dialogue ${i + 1}`);
-      voices.push({ ...voice, audioPath });
-    }
-    assets.push({ sceneId: scene.id, duration: scene.duration, imagePath, voices, characterIds: scene.characterIds || [] });
+    assets.push({ sceneId: scene.id, duration: scene.duration, imagePath, voices: voiceAssets.get(scene.id) || [], characterIds: scene.characterIds || [] });
   }
   await fs.writeFile(path.join(outDir, 'assets.json'), JSON.stringify(assets, null, 2));
   return assets;
