@@ -25,12 +25,19 @@ async function cloudflareImage(fields, env) {
     const data = await response.json().catch(() => ({}));
     if (!response.ok || !data.success) {
       const detail = data.errors?.map((e) => e.message).join('; ') || `HTTP ${response.status}`;
-      throw new Error(detail);
+      const error = new Error(detail);
+      error.cloudflareFlagged = /flagged|safety|content/i.test(detail);
+      throw error;
     }
     const encoded = typeof data.result === 'string' ? data.result : data.result?.image;
     if (!encoded) throw new Error('Cloudflare returned no image data');
     return Buffer.from(String(encoded).replace(/^data:image\/[^;]+;base64,/, ''), 'base64');
   } finally { clearTimeout(timeout); }
+}
+
+function safePrompt(scene) {
+  const base = scene.visual || scene.imagePrompt || '';
+  return `${base}. ORIGINAL FAMILY-FRIENDLY STYLIZED 3D ANIMATION. Non-photorealistic animated film frame, clean shapes, expressive friendly characters, cinematic lighting. Show only the ordinary story action needed for this scene. No violence, injury, weapons, blood, gore, frightening imagery, sexual content, or dangerous activity. Preserve the established character designs. Vertical 9:16.`;
 }
 
 export async function generateCharacterReference(characters, env = process.env) {
@@ -50,13 +57,25 @@ export async function generateCharacterReference(characters, env = process.env) 
 
 export async function generateImage(scene, env = process.env) {
   const provider = env.IMAGE_PROVIDER || 'mock';
-  const prompt = `${scene.visual || scene.imagePrompt || ''}. ORIGINAL STYLIZED 3D ANIMATED FILM LOOK, clearly non-photorealistic and not live action. Use image 0 as the character identity reference. Keep every referenced character the exact same designed person: same face, hair, skin tone, age, body proportions, clothing identity and distinctive features. Change only pose, expression, camera framing, location and action required by this scene. Do not introduce replacement people. Expressive animation, polished cinematic lighting, clean shapes, natural readable anatomy, cinematic vertical composition, 9:16.`;
-  if (provider === 'mock') return { sceneId: scene.id, prompt, path: null };
+  if (provider === 'mock') return { sceneId: scene.id, prompt: scene.imagePrompt || scene.visual || '', path: null };
   if (provider !== 'cloudflare') throw new Error(`Unsupported image provider: ${provider}`);
-  console.log(`[CF] Generating ${scene.id} with ${modelFor(env)}${scene.referenceBuffer ? ' + character reference' : ''}`);
-  const fields = { prompt, width: Number(env.IMAGE_WIDTH || 512), height: Number(env.IMAGE_HEIGHT || 896) };
+
+  const normalPrompt = `${scene.visual || scene.imagePrompt || ''}. ORIGINAL STYLIZED 3D ANIMATED FILM LOOK, clearly non-photorealistic and not live action. Use image 0 as the character identity reference. Keep every referenced character the exact same designed person: same face, hair, skin tone, age, body proportions, clothing identity and distinctive features. Change only pose, expression, camera framing, location and action required by this scene. Do not introduce replacement people. Expressive animation, polished cinematic lighting, clean shapes, natural readable anatomy, cinematic vertical composition, 9:16.`;
+  const fields = { prompt: normalPrompt, width: Number(env.IMAGE_WIDTH || 512), height: Number(env.IMAGE_HEIGHT || 896) };
   if (scene.referenceBuffer) fields.input_image_0 = scene.referenceBuffer;
-  const buffer = await cloudflareImage(fields, env);
-  console.log(`[CF] Image generated for ${scene.id}`);
-  return { sceneId: scene.id, prompt, buffer };
+
+  console.log(`[CF] Generating ${scene.id} with ${modelFor(env)}${scene.referenceBuffer ? ' + character reference' : ''}`);
+  try {
+    const buffer = await cloudflareImage(fields, env);
+    console.log(`[CF] Image generated for ${scene.id}`);
+    return { sceneId: scene.id, prompt: normalPrompt, buffer };
+  } catch (error) {
+    if (!error.cloudflareFlagged) throw error;
+    console.warn(`[CF] ${scene.id} was flagged. Retrying once with a neutral prompt and no reference image.`);
+    const fallbackPrompt = safePrompt(scene);
+    const fallbackFields = { prompt: fallbackPrompt, width: Number(env.IMAGE_WIDTH || 512), height: Number(env.IMAGE_HEIGHT || 896) };
+    const buffer = await cloudflareImage(fallbackFields, env);
+    console.log(`[CF] Safe fallback image generated for ${scene.id}`);
+    return { sceneId: scene.id, prompt: fallbackPrompt, buffer };
+  }
 }
