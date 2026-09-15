@@ -25,9 +25,9 @@ function escapeAssText(text) {
   return String(text || '').replace(/\r?\n/g, ' ').replace(/[{}]/g, '').replace(/\\/g, '').trim();
 }
 
-// Hi-style mobile captions: short 4–6 word groups with real ASS karaoke timing.
+// Hi-style mobile captions: compact 5-word groups, uppercase, with real ASS karaoke timing.
 function buildAss(lines, duration) {
-  const safeLines = lines.map(v => ({ text: escapeAssText(v.text), duration: Number(v.duration) || 0 })).filter(v => v.text);
+  const safeLines = lines.map(v => ({ text: escapeAssText(v.text).toUpperCase(), duration: Number(v.duration) || 0 })).filter(v => v.text);
   if (!safeLines.length) return '';
   const hinted = safeLines.reduce((n, v) => n + v.duration, 0);
   const scale = hinted > 0 ? duration / hinted : 1;
@@ -40,7 +40,7 @@ function buildAss(lines, duration) {
     const lineDuration = line.duration > 0 ? line.duration * scale : duration / safeLines.length;
     const lineEnd = Math.min(duration, current + lineDuration);
 
-    // Keep each caption compact so it stays inside the rounded card.
+    // Keep each caption to at most 5 words so it stays clean inside the rounded card.
     for (let start = 0; start < words.length; start += 5) {
       const chunk = words.slice(start, start + 5);
       const chunkWordCount = chunk.length;
@@ -54,8 +54,8 @@ function buildAss(lines, duration) {
       const karaoke = chunk.map((word, i) => {
         const cs = i === chunkWordCount - 1 ? Math.max(1, totalCs - used) : baseCs;
         used += cs;
-        // Important: use ONE backslash. Two backslashes render literally as "\\k".
-        return '\\k' + cs + word;
+        // ASS karaoke tags MUST be inside override braces, e.g. {\\kf38}WORD.
+        return `{\\kf${cs}}${word}`;
       }).join(' ');
       events.push(`Dialogue: 0,${assTime(chunkStart)},${assTime(chunkEnd)},Caption,,0,0,0,,${karaoke}`);
     }
