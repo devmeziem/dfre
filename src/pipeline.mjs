@@ -35,6 +35,7 @@ export async function buildPlan(inputFile) {
     return `${mapped.name}: ${mapped.gender}; ${mapped.appearance}; voice=${mapped.voice}`;
   }).join('\n');
 
+  const environmentBible = String(project.environment || project.setting || '').trim();
   const scenes = (project.scenes || []).map((scene, i) => {
     const dialogue = (scene.dialogue || scene.lines || []).map((line) => {
       const character = characterMap.get(String(line.speaker || '').toLowerCase());
@@ -44,11 +45,13 @@ export async function buildPlan(inputFile) {
       .map((name) => characterMap.get(name)).filter(Boolean);
     const sceneCharacters = speakers.length ? speakers : characters.map((c) => characterMap.get(String(c.name).toLowerCase())).filter(Boolean);
     const continuity = sceneCharacters.map((character) => `${character.name}: ${character.appearance}`).join('; ');
-    const imagePrompt = `${scene.imagePrompt || scene.visual || ''}. CHARACTER CONTINUITY: ${continuity}. Keep each named character exactly the same person, gender, face, hair, skin tone, clothing identity and distinctive features. Do not introduce replacement people. Cinematic vertical composition, detailed lighting, 9:16.`;
+    const location = String(scene.location || '').trim();
+    const environment = environmentBible || location || 'the established primary story setting';
+    const imagePrompt = `${scene.imagePrompt || scene.visual || ''}. ENVIRONMENT CONTINUITY BIBLE: ${environment}. LOCATION FOR THIS SCENE: ${location || environment}. CHARACTER CONTINUITY: ${continuity}. Keep each named character exactly the same person, gender, face, hair, skin tone, clothing identity and distinctive features. Keep the established environment architecture, layout, furniture, major objects, palette, time of day and lighting direction consistent. Do not redesign or replace the background between scenes. Change only the camera angle, character pose/expression and story action required by this scene. Do not introduce replacement people. Cinematic vertical composition, detailed lighting, 9:16.`;
     return { ...scene, id: scene.id || `s${i + 1}`, imagePrompt, dialogue, characterIds: sceneCharacters.map((c) => c.characterId) };
   });
 
-  return { ...project, characters, characterBible, scenes, format: 'vertical', width: 1080, height: 1920, fps: 30 };
+  return { ...project, characters, environment: environmentBible, characterBible, scenes, format: 'vertical', width: 1080, height: 1920, fps: 30 };
 }
 
 export async function prepareAssets(plan, outDir) {
@@ -77,7 +80,7 @@ export async function prepareAssets(plan, outDir) {
 
   let referenceBuffer = null;
   if (plan.characters?.length && typeof mediaProvider.characterReference === 'function') {
-    const reference = await mediaProvider.characterReference(plan.characters);
+    const reference = await mediaProvider.characterReference(plan.characters, plan.environment);
     if (reference?.buffer) {
       referenceBuffer = reference.buffer;
       await fs.writeFile(path.join(referencesDir, 'reference-sheet.png'), referenceBuffer);
