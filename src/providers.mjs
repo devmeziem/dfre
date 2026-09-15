@@ -19,7 +19,7 @@ export class MockProvider {
     };
   }
   async image(prompt) { return { type: 'image', prompt, path: null }; }
-  async characterReference(characters) { return generateCharacterReference(characters, process.env); }
+  async characterReference(characters, environment) { return generateCharacterReference(characters, environment, process.env); }
   async voice(text, voice) { return { type: 'audio', text, voice, path: null }; }
 }
 
@@ -27,6 +27,6 @@ export class RealProvider {
   constructor(env = process.env) { this.env = env; }
   async story(input) { return generateStory(input, this.env); }
   async image(scene) { return generateImage(scene, this.env); }
-  async characterReference(characters) { return generateCharacterReference(characters, this.env); }
+  async characterReference(characters, environment) { return generateCharacterReference(characters, environment, this.env); }
   async voice(line, voice) { return generateVoice(line, voice, this.env); }
 }
