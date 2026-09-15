@@ -16,13 +16,16 @@ export async function generateStory(input, env = process.env) {
   const model = env.STORY_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
   const prompt = `Create an original ${input.genre || 'mystery'} narrated short film about ${input.durationSeconds || 45} seconds long. Idea: ${input.title || 'The Last Signal'}.
 Return ONLY one valid JSON object with this exact top-level structure:
-{"title":"...","genre":"...","durationSeconds":45,"characters":[{"name":"...","gender":"female|male","appearance":"fixed visual description"}],"scenes":[{"id":"s1","duration":5,"location":"...","visual":"...","imagePrompt":"...","dialogue":[{"speaker":"Narrator","text":"..."}]}]}
+{"title":"...","genre":"...","durationSeconds":45,"environment":"fixed primary setting and visual environment for the whole story","characters":[{"name":"...","gender":"female|male","appearance":"fixed visual description"}],"scenes":[{"id":"s1","duration":5,"location":"...","visual":"...","imagePrompt":"...","dialogue":[{"speaker":"Narrator","text":"..."}]}]}
 Rules:
 - Create 2-4 recurring original visual characters.
 - Each character must have a fixed gender and detailed appearance (age range, skin tone, hair, hairstyle, clothing/colors, and distinctive features).
 - Use exactly the same character names throughout the story.
 - Never change a character's gender, appearance, clothing identity, or physical traits between scenes.
-- Every scene imagePrompt must describe the correct recurring characters and preserve their fixed appearance.
+- Establish ONE primary visual environment/location for the story and treat it as an environment bible: same architecture, room/area layout, walls, windows, doors, furniture, major objects, color palette, time-of-day and lighting direction across scenes.
+- Keep scenes in that same primary environment by default. Only change location when the plot absolutely requires it, and if a location change happens, keep that new location consistent for every later scene that uses it.
+- Do not randomly replace, redesign, rearrange, or invent the background between scenes. Background continuity is as important as character continuity.
+- Every scene imagePrompt must explicitly restate the relevant environment details and the characters present, not merely say "same location".
 - THIS V1 USES ONE STORYTELLER VOICE ONLY. Every dialogue entry must use exactly speaker "Narrator". Do not create character dialogue, radio voices, announcers, or other speakers.
 - Write natural storytelling narration that describes what happens on screen, with a strong hook, rising tension, and a satisfying ending. Keep narration concise enough to fit the scene duration.
 - Give the recurring characters actions, expressions, and interactions in the visuals even though they do not speak.
