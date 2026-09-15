@@ -25,7 +25,7 @@ function escapeAssText(text) {
   return String(text || '').replace(/\r?\n/g, ' ').replace(/[{}]/g, '').replace(/\\/g, '').trim();
 }
 
-// Hi-style mobile captions: short 4–6 word groups with word-by-word karaoke timing.
+// Hi-style mobile captions: short 4–6 word groups with real ASS karaoke timing.
 function buildAss(lines, duration) {
   const safeLines = lines.map(v => ({ text: escapeAssText(v.text), duration: Number(v.duration) || 0 })).filter(v => v.text);
   if (!safeLines.length) return '';
@@ -39,19 +39,30 @@ function buildAss(lines, duration) {
     if (!words.length) continue;
     const lineDuration = line.duration > 0 ? line.duration * scale : duration / safeLines.length;
     const lineEnd = Math.min(duration, current + lineDuration);
-    const totalCs = Math.max(1, Math.round((lineEnd - current) * 100));
-    const baseCs = Math.max(1, Math.floor(totalCs / words.length));
-    let used = 0;
-    const karaoke = words.map((word, i) => {
-      const cs = i === words.length - 1 ? Math.max(1, totalCs - used) : baseCs;
-      used += cs;
-      return `\\k${cs}${word}`;
-    }).join(' ');
-    events.push(`Dialogue: 0,${assTime(current)},${assTime(lineEnd)},Caption,,0,0,0,,${karaoke}`);
+
+    // Keep each caption compact so it stays inside the rounded card.
+    for (let start = 0; start < words.length; start += 5) {
+      const chunk = words.slice(start, start + 5);
+      const chunkWordCount = chunk.length;
+      const chunkStartRatio = start / words.length;
+      const chunkEndRatio = (start + chunkWordCount) / words.length;
+      const chunkStart = current + (lineEnd - current) * chunkStartRatio;
+      const chunkEnd = current + (lineEnd - current) * chunkEndRatio;
+      const totalCs = Math.max(1, Math.round((chunkEnd - chunkStart) * 100));
+      const baseCs = Math.max(1, Math.floor(totalCs / chunkWordCount));
+      let used = 0;
+      const karaoke = chunk.map((word, i) => {
+        const cs = i === chunkWordCount - 1 ? Math.max(1, totalCs - used) : baseCs;
+        used += cs;
+        // Important: use ONE backslash. Two backslashes render literally as "\\k".
+        return '\\k' + cs + word;
+      }).join(' ');
+      events.push(`Dialogue: 0,${assTime(chunkStart)},${assTime(chunkEnd)},Caption,,0,0,0,,${karaoke}`);
+    }
     current = lineEnd;
   }
 
-  return `[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,DejaVu Sans,54,&H00FFFFFF,&H00FFFFFF,&H00101010,&H00000000,-1,0,0,0,100,100,0,0,1,3,1,2,80,80,205,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n${events.join('\n')}\n`;
+  return `[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nScaledBorderAndShadow: yes\n\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Caption,DejaVu Sans,54,&H00FFFFFF,&H00D0D0D0,&H00101010,&H00000000,-1,0,0,0,100,100,0,0,1,3,1,2,80,80,175,1\n\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n${events.join('\n')}\n`;
 }
 
 async function makeRoundedCaptionCard(work) {
