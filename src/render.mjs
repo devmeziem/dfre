@@ -25,7 +25,7 @@ function escapeAssText(text) {
   return String(text || '').replace(/\r?\n/g, ' ').replace(/[{}]/g, '').replace(/\\/g, '').trim();
 }
 
-// Hi-style mobile captions: 4–6 word groups with karaoke timing.
+// Hi-style mobile captions: short 4–6 word groups with word-by-word karaoke timing.
 function buildAss(lines, duration) {
   const safeLines = lines.map(v => ({ text: escapeAssText(v.text), duration: Number(v.duration) || 0 })).filter(v => v.text);
   if (!safeLines.length) return '';
@@ -86,6 +86,8 @@ export async function renderVideo(plan, assets, output = 'output/final.mp4') {
 
     const clip = path.join(work, `${asset.sceneId}.mp4`);
     const duration = Number(asset.duration) || 1;
+    // Lightweight Hi-inspired motion treatment: slow push-in, subtle contrast/saturation,
+    // vignette and short fades. It animates the still image without generating extra images.
     const motion = `scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,zoompan=z='min(zoom+0.0007,1.08)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1080x1920:fps=30,eq=contrast=1.04:saturation=1.04,vignette=PI/5,fade=t=in:st=0:d=0.18,fade=t=out:st=${Math.max(0.2, duration - 0.22)}:d=0.22`;
     const assFilter = `subtitles='${filterPath(ass)}'`;
     const filterComplex = `[0:v]${motion}[scene];[scene][1:v]overlay=x=70:y=1605:format=auto:shortest=1[carded];[carded]${assFilter}[vout]`;
