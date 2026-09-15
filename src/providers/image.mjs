@@ -37,18 +37,19 @@ async function cloudflareImage(fields, env) {
 
 function safePrompt(scene) {
   const base = scene.visual || scene.imagePrompt || '';
-  return `${base}. ORIGINAL FAMILY-FRIENDLY STYLIZED 3D ANIMATION. Non-photorealistic animated film frame, clean shapes, expressive friendly characters, cinematic lighting. Show only the ordinary story action needed for this scene. No violence, injury, weapons, blood, gore, frightening imagery, sexual content, or dangerous activity. Preserve the established character designs. Vertical 9:16.`;
+  return `${base}. ORIGINAL FAMILY-FRIENDLY STYLIZED 3D ANIMATION. Non-photorealistic animated film frame, clean shapes, expressive friendly characters, cinematic lighting. Show only the ordinary story action needed for this scene. No violence, injury, weapons, blood, gore, frightening imagery, sexual content, or dangerous activity. Preserve the established character designs and environment continuity. Vertical 9:16.`;
 }
 
-export async function generateCharacterReference(characters, env = process.env) {
+export async function generateCharacterReference(characters, environment = '', env = process.env) {
   const provider = env.IMAGE_PROVIDER || 'mock';
   const description = characters.map((c) => `${c.name}: ${c.gender}; ${c.appearance}`).join('\n');
-  const prompt = `Create an ORIGINAL stylized 3D animated character reference sheet for a cinematic short film. Non-photorealistic animation only: appealing designed characters, slightly rounded forms, expressive faces, clean shapes, polished animated-film lighting, not live action, not a photograph. Show every named character clearly and separately, waist-up or full-body, front-facing, neutral pose, simple neutral background. Preserve the exact appearance described below. Do not add extra people. This image is a visual identity reference for later scenes.\n\n${description}`;
+  const environmentText = String(environment || '').trim() || 'a consistent primary story environment';
+  const prompt = `Create an ORIGINAL stylized 3D animated visual bible reference sheet for a cinematic short film. Non-photorealistic animation only: appealing designed characters, slightly rounded forms, expressive faces, clean shapes, polished animated-film lighting, not live action, not a photograph. Show every named character clearly and separately in the SAME PRIMARY ENVIRONMENT described below, so later scenes can preserve both character identity and background continuity. Include recognizable fixed architecture, room/area layout, walls, windows, doors, furniture, major objects, color palette, time-of-day and lighting direction. Do not add extra people. Preserve the exact character appearances described below.\n\nPRIMARY ENVIRONMENT:\n${environmentText}\n\nCHARACTERS:\n${description}`;
   if (provider === 'mock') return { prompt, buffer: null };
   if (provider === 'cloudflare') {
-    console.log(`[CF] Generating stylized character reference with ${modelFor(env)}`);
+    console.log(`[CF] Generating stylized character/environment reference with ${modelFor(env)}`);
     const buffer = await cloudflareImage({ prompt, width: 448, height: 448 }, env);
-    console.log('[CF] Character reference generated');
+    console.log('[CF] Character/environment reference generated');
     return { prompt, buffer };
   }
   if (provider === 'huggingface') throw new Error('Hugging Face image generation is disabled for this build; use IMAGE_PROVIDER=cloudflare');
@@ -60,11 +61,11 @@ export async function generateImage(scene, env = process.env) {
   if (provider === 'mock') return { sceneId: scene.id, prompt: scene.imagePrompt || scene.visual || '', path: null };
   if (provider !== 'cloudflare') throw new Error(`Unsupported image provider: ${provider}`);
 
-  const normalPrompt = `${scene.visual || scene.imagePrompt || ''}. ORIGINAL STYLIZED 3D ANIMATED FILM LOOK, clearly non-photorealistic and not live action. Use image 0 as the character identity reference. Keep every referenced character the exact same designed person: same face, hair, skin tone, age, body proportions, clothing identity and distinctive features. Change only pose, expression, camera framing, location and action required by this scene. Do not introduce replacement people. Expressive animation, polished cinematic lighting, clean shapes, natural readable anatomy, cinematic vertical composition, 9:16.`;
+  const normalPrompt = `${scene.visual || scene.imagePrompt || ''}. ORIGINAL STYLIZED 3D ANIMATED FILM LOOK, clearly non-photorealistic and not live action. Use image 0 as the visual identity and environment reference. Keep every referenced character the exact same designed person: same face, hair, skin tone, age, body proportions, clothing identity and distinctive features. Keep the established environment architecture, layout, furniture, major objects, palette, time of day and lighting direction consistent with the reference. Change only pose, expression, camera framing and story action required by this scene. Do not redesign or replace the background. Do not introduce replacement people. Expressive animation, polished cinematic lighting, clean shapes, natural readable anatomy, cinematic vertical composition, 9:16.`;
   const fields = { prompt: normalPrompt, width: Number(env.IMAGE_WIDTH || 512), height: Number(env.IMAGE_HEIGHT || 896) };
   if (scene.referenceBuffer) fields.input_image_0 = scene.referenceBuffer;
 
-  console.log(`[CF] Generating ${scene.id} with ${modelFor(env)}${scene.referenceBuffer ? ' + character reference' : ''}`);
+  console.log(`[CF] Generating ${scene.id} with ${modelFor(env)}${scene.referenceBuffer ? ' + visual reference' : ''}`);
   try {
     const buffer = await cloudflareImage(fields, env);
     console.log(`[CF] Image generated for ${scene.id}`);
