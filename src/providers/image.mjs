@@ -37,7 +37,7 @@ async function cloudflareImage(fields, env) {
 
 function safePrompt(scene) {
   const base = scene.visual || scene.imagePrompt || '';
-  return `${base}. ORIGINAL FAMILY-FRIENDLY STYLIZED 3D ANIMATION. Non-photorealistic animated film frame, clean shapes, expressive friendly characters, cinematic lighting. Show only the ordinary story action needed for this scene. No violence, injury, weapons, blood, gore, frightening imagery, sexual content, or dangerous activity. Preserve the established character designs and environment continuity. Vertical 9:16.`;
+  return `${base}. ORIGINAL FAMILY-FRIENDLY STYLIZED 3D ANIMATION. Non-photorealistic animated film frame, clean shapes, expressive friendly characters, cinematic lighting. Use image 0 as the visual identity and environment reference. Preserve the established character designs exactly: same face, hair, skin tone, age, body proportions, clothing identity and distinctive features. Preserve the established environment architecture, layout, furniture, major objects, palette, time of day and lighting direction. Change only pose, expression, camera framing and ordinary story action. Do not redesign or replace the background or characters. Show only the ordinary story action needed for this scene. No violence, injury, weapons, blood, gore, frightening imagery, sexual content, or dangerous activity. Vertical 9:16.`;
 }
 
 export async function generateCharacterReference(characters, environment = '', env = process.env) {
@@ -72,11 +72,16 @@ export async function generateImage(scene, env = process.env) {
     return { sceneId: scene.id, prompt: normalPrompt, buffer };
   } catch (error) {
     if (!error.cloudflareFlagged) throw error;
-    console.warn(`[CF] ${scene.id} was flagged. Retrying once with a neutral prompt and no reference image.`);
+    console.warn(`[CF] ${scene.id} was flagged. Retrying once with the same visual reference.`);
     const fallbackPrompt = safePrompt(scene);
-    const fallbackFields = { prompt: fallbackPrompt, width: Number(env.IMAGE_WIDTH || 512), height: Number(env.IMAGE_HEIGHT || 896) };
+    const fallbackFields = {
+      prompt: fallbackPrompt,
+      width: Number(env.IMAGE_WIDTH || 512),
+      height: Number(env.IMAGE_HEIGHT || 896),
+      ...(scene.referenceBuffer ? { input_image_0: scene.referenceBuffer } : {})
+    };
     const buffer = await cloudflareImage(fallbackFields, env);
-    console.log(`[CF] Safe fallback image generated for ${scene.id}`);
+    console.log(`[CF] Safe fallback image generated for ${scene.id} with visual reference preserved`);
     return { sceneId: scene.id, prompt: fallbackPrompt, buffer };
   }
 }
