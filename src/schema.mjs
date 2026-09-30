@@ -21,6 +21,7 @@ export function validateProject(project) {
       if (!line?.speaker || !String(line.speaker).trim()) throw new Error(`Scene ${index + 1}, dialogue ${lineIndex + 1}: missing speaker`);
       if (!line?.text || !String(line.text).trim()) throw new Error(`Scene ${index + 1}, dialogue ${lineIndex + 1}: missing text`);
       const speaker = String(line.speaker).trim().toLowerCase();
+      if (speaker !== 'narrator') throw new Error(`Scene ${index + 1}, dialogue ${lineIndex + 1}: V1 requires Narrator-only voice; found "${line.speaker}"`);
       if (characterNames.size && !characterNames.has(speaker) && !NON_CHARACTER_SPEAKERS.has(speaker)) {
         throw new Error(`Scene ${index + 1}, dialogue ${lineIndex + 1}: unknown character "${line.speaker}"`);
       }
