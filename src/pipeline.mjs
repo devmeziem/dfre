@@ -88,14 +88,20 @@ export async function prepareAssets(plan, outDir) {
   }
 
   const assets = [];
+  let previousSceneBuffer = null;
   for (const scene of plan.scenes) {
-    const image = await mediaProvider.image({ ...scene, referenceBuffer });
+    // First scene uses the character/environment bible. Every later scene uses the
+    // rendered previous scene as the visual continuity anchor, while the prompt
+    // still carries the full character/environment bible.
+    const continuityBuffer = previousSceneBuffer || referenceBuffer;
+    const image = await mediaProvider.image({ ...scene, referenceBuffer: continuityBuffer });
     let imagePath = null;
     if (image.buffer) {
       imagePath = path.join(outDir, `${scene.id}.png`);
       await fs.writeFile(imagePath, image.buffer);
     }
     if (!imagePath) throw new Error(`Image provider returned no image for ${scene.id}`);
+    previousSceneBuffer = image.buffer;
     assets.push({ sceneId: scene.id, duration: scene.duration, imagePath, voices: voiceAssets.get(scene.id) || [], characterIds: scene.characterIds || [] });
   }
   await fs.writeFile(path.join(outDir, 'assets.json'), JSON.stringify(assets, null, 2));
