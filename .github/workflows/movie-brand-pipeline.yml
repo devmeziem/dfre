@@ -1,4 +1,4 @@
-name: Cinema Vanguard - Episodic Movie Series Pipeline
+name: DFRE - Standalone Cinematic Short Pipeline
 
 # Movie-brand episodic pipeline adapted for DFRE.
 # It generates the cinematic short, verifies the MP4, and archives the result.
@@ -6,25 +6,20 @@ name: Cinema Vanguard - Episodic Movie Series Pipeline
 on:
   workflow_dispatch:
     inputs:
-      episode_index:
-        description: 'Episode Index (0 = Ep 1, 1 = Ep 2, 2 = Ep 3, ...)'
-        required: false
-        default: '0'
-        type: string
-      story:
+        story:
         description: 'Story idea or episode title'
         required: true
-        default: 'The Last Signal'
+        default: 'The Second Lunch'
         type: string
       genre:
         description: 'Genre'
         required: true
-        default: 'mystery'
+        default: 'emotional human story'
         type: string
       duration:
         description: 'Target duration in seconds'
         required: true
-        default: '60'
+        default: '90'
         type: string
       auto_publish:
         description: 'Publish externally (not configured in DFRE yet)'
@@ -83,14 +78,12 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps --no-audit --no-fund
 
-      - name: Movie Series Status
+      - name: Standalone Short Status
         env:
-          EPISODE_INDEX: ${{ inputs.episode_index }}
           AUTO_PUBLISH: ${{ inputs.auto_publish }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          echo "=== 🎬 Cinema Vanguard / DFRE ==="
-          echo "Episode index: $EPISODE_INDEX"
+          echo "=== 🎬 DFRE Standalone Cinematic Short ==="
           echo "External publishing requested: $AUTO_PUBLISH"
           echo "Dry run: $DRY_RUN"
           echo "DFRE currently builds and archives the video; external publishing is not wired into this repository."
@@ -103,7 +96,6 @@ jobs:
           STORY: ${{ inputs.story }}
           GENRE: ${{ inputs.genre }}
           DURATION: ${{ inputs.duration }}
-          EPISODE_INDEX: ${{ inputs.episode_index }}
         run: |
           node - <<'NODE'
           const fs = require('fs');
@@ -111,41 +103,34 @@ jobs:
           if (!Number.isFinite(duration) || duration < 5 || duration > 120) {
             throw new Error('Duration must be between 5 and 120 seconds');
           }
-          const episode = Number(process.env.EPISODE_INDEX);
-          if (!Number.isInteger(episode) || episode < 0) {
-            throw new Error('Episode index must be a non-negative integer');
-          }
           const x = {
             title: process.env.STORY,
             genre: process.env.GENRE,
             durationSeconds: duration,
-            episodeIndex: episode
           };
           fs.mkdirSync('stories', { recursive: true });
           fs.writeFileSync('stories/run.json', JSON.stringify(x, null, 2));
           NODE
 
-      - name: Build episodic MP4
+      - name: Build standalone cinematic MP4
         run: npm run render -- stories/run.json
 
-      - name: Verify episode video
+      - name: Verify standalone video
         run: |
           test -s output/final.mp4
           ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/final.mp4
 
-      - name: Write episode manifest
+      - name: Write standalone manifest
         env:
           STORY: ${{ inputs.story }}
           GENRE: ${{ inputs.genre }}
-          EPISODE_INDEX: ${{ inputs.episode_index }}
           RUN_ID: ${{ github.run_id }}
         run: |
           node - <<'NODE'
           const fs = require('fs');
           const manifest = {
-            series: 'Cinema Vanguard',
             pipeline: 'DFRE',
-            episodeIndex: Number(process.env.EPISODE_INDEX),
+            format: 'standalone-cinematic-short',
             title: process.env.STORY,
             genre: process.env.GENRE,
             runId: process.env.RUN_ID,
@@ -157,7 +142,7 @@ jobs:
       - name: Archive Movie Video Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: movie-episode-reel-${{ github.run_id }}
+          name: dfre-cinematic-short-${{ github.run_id }}
           path: |
             output/final.mp4
             output/movie_episode_manifest.json
@@ -168,9 +153,8 @@ jobs:
         if: always()
         run: |
           echo "==============================================================="
-          echo "CINEMA VANGUARD EPISODIC ENGINE PIPELINE COMPLETED"
-          echo "Episode: ${{ inputs.episode_index }}"
-          echo "Video artifact: movie-episode-reel-${{ github.run_id }}"
+          echo "DFRE STANDALONE CINEMATIC SHORT PIPELINE COMPLETED"
+          echo "Video artifact: dfre-cinematic-short-${{ github.run_id }}"
           echo "DFRE video generation is complete."
           echo "External publishing remains intentionally unconfigured."
           echo "==============================================================="
