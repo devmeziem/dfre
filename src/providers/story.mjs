@@ -1,36 +1,36 @@
 function localStorySynthesis(input) {
-  const title = input.title || 'The Last Signal';
-  const genre = input.genre || 'mystery';
-  const durationSeconds = Number(input.durationSeconds || 45);
-  const environment = 'A small, cozy old communications room with warm wooden walls, one tall window, a metal desk with an old radio receiver, a desk lamp, shelves of labeled boxes, and a round wall clock. Warm amber practical light comes from the desk lamp while cool blue moonlight enters through the window. Keep this exact architecture, furniture placement, objects, palette and lighting direction throughout the story.';
+  const title = input.title || 'The Second Lunch';
+  const genre = input.genre || 'emotional human story';
+  const durationSeconds = Math.max(45, Math.min(120, Number(input.durationSeconds || 90)));
+  const environment = 'A bright but natural school cafeteria connected to a quiet school hallway. The cafeteria has long wooden tables, simple chairs, large windows, pale walls, a serving counter and soft midday daylight. The hallway has pale walls, classroom doors, a notice board and a polished floor. Keep each location internally consistent, with the same architecture, furniture placement, major objects, palette and lighting direction whenever it appears.';
   const characters = [
-    { name: 'Mara', gender: 'female', appearance: 'young adult woman, medium-brown skin, short curly dark hair, round glasses, mustard-yellow jacket over a cream shirt, dark trousers, small silver wristwatch, expressive observant face' },
-    { name: 'Eli', gender: 'male', appearance: 'young adult man, deep-brown skin, short neat black hair, teal hoodie under a charcoal utility vest, dark trousers, red canvas sneakers, slim build, calm thoughtful face' }
+    { name: 'Marcus', gender: 'male', appearance: '14-year-old boy, medium-brown skin, short curly black hair, expressive brown eyes, blue hoodie, dark trousers, black school backpack, slim build' },
+    { name: 'Mr. Adeyemi', gender: 'male', appearance: 'older adult school janitor, dark-brown skin, short gray hair, gentle tired face, gray work shirt, dark work trousers, simple black work shoes, sturdy build' }
   ];
   const beats = [
-    { visual: 'Mara sits at the metal desk beside Eli, studying the old radio while the room remains quiet and unchanged.', text: `At midnight, ${title} began with a sound nobody had heard in years.` },
-    { visual: 'The radio receiver flickers. Mara leans closer while Eli watches the signal meter, with the same desk, shelves, window and clock visible.', text: 'The old radio suddenly crackled, carrying a signal beneath the static.' },
-    { visual: 'Mara adjusts the radio dial while Eli checks the wall clock. The warm lamp and cool window light remain consistent.', text: 'Mara turned the dial slowly, and the mysterious signal became clearer.' },
-    { visual: 'Eli notices a small envelope beside the radio and shows it to Mara. Both react with surprise in the same room.', text: 'Then Eli found something waiting beside the receiver: an envelope with their names on it.' },
-    { visual: 'Mara opens the envelope while Eli stands beside her. The message points toward the old radio, and the environment remains identical.', text: 'Inside was a simple message telling them to listen one more time.' },
-    { visual: 'The radio glows softly as Mara and Eli listen together. The room stays visually identical while the clock approaches dawn.', text: 'They listened again, and the final transmission revealed why the signal had returned.' },
-    { visual: 'Mara smiles with relief as Eli switches off the radio. Early blue morning light begins to mix with the warm lamp.', text: 'By sunrise, the mystery was solved, and the silence finally felt peaceful.' }
+    { visual: 'Busy school cafeteria at lunchtime. Marcus sits alone at the end of a long table, wearing his blue hoodie with his black backpack beside him. He opens the backpack and reveals two identical red lunchboxes; one is on the table and the second remains inside the backpack. Other students are background figures only.', text: 'Every day, Marcus brought two lunches to school. And every day, he made sure nobody saw the second one.' },
+    { visual: 'The cafeteria is beginning to empty. Marcus closes the first red lunchbox, places it into his black backpack, waits until the other students leave, then quietly walks toward the cafeteria side door.', text: 'When everyone else left, Marcus stayed behind.' },
+    { visual: 'Quiet school hallway connected to the cafeteria. Marcus walks toward Mr. Adeyemi, who is mopping the polished floor. Marcus carries the black backpack and carefully takes the second red lunchbox out. Mr. Adeyemi notices him.', text: 'He was not taking the second lunch home. He was taking it somewhere nobody expected.' },
+    { visual: 'In the same hallway, Marcus stands beside Mr. Adeyemi and offers him the second red lunchbox with both hands. Mr. Adeyemi looks surprised, then accepts it with a grateful expression. No one else is nearby.', text: 'Mr. Adeyemi worked at the school every day, but he could not always afford lunch for himself.' },
+    { visual: 'The next school day in the same cafeteria. Marcus opens his black backpack and sees two red lunchboxes again. A small handwritten note is attached to one lunchbox. Marcus reads it and looks toward the cafeteria entrance.', text: 'The next day, Marcus found something inside his bag.' },
+    { visual: 'Close-up at the same cafeteria table. The handwritten note clearly reads THANK YOU, with a small childlike drawing of two people sitting at a table. In the background, Mr. Adeyemi stands at the cafeteria entrance and gives Marcus a small wave. Marcus smiles and waves back.', text: 'It was only two words. But Marcus kept that note.' },
+    { visual: 'One year later in the same cafeteria, Marcus is slightly older but still recognizable, wearing a similar blue hoodie and carrying the same black backpack. He places two red lunchboxes on a table. Four other students sit nearby, and one student quietly slides an extra lunch toward another student who is sitting alone.', text: 'A year later, Marcus still brought two lunches. But he was not the only one anymore.' },
+    { visual: 'The same cafeteria is now full of students quietly sharing food. Mr. Adeyemi walks through the room and stops when he sees several students helping others. Marcus looks up at him, and they exchange a warm smile.', text: 'One small act had quietly become a habit, and that habit had become something bigger.' },
+    { visual: 'End of school day in the same hallway. Marcus walks past Mr. Adeyemi. They exchange a brief smile. The camera remains behind Marcus as he walks away. Through the open cafeteria doorway, the original red lunchbox remains visible on a table in the warm late-afternoon light.', text: 'You do not always need to change the world. Sometimes, you just need to make sure someone does not feel forgotten.' }
   ];
-  const count = Math.max(2, Math.min(beats.length, Math.ceil(durationSeconds / 8)));
-  const selected = beats.slice(0, count);
-  const perScene = durationSeconds / selected.length;
+  const perScene = durationSeconds / beats.length;
   return {
     title,
     genre,
     durationSeconds,
     environment,
     characters,
-    scenes: selected.map((beat, index) => ({
+    scenes: beats.map((beat, index) => ({
       id: `s${index + 1}`,
       duration: Number(perScene.toFixed(2)),
-      location: 'old communications room',
+      location: index === 2 || index === 3 || index === 8 ? 'school hallway' : 'school cafeteria',
       visual: beat.visual,
-      imagePrompt: `${beat.visual} Stylized 3D animated film frame, non-photorealistic, cinematic vertical composition. Preserve Mara and Eli exactly as established, and preserve the exact communications-room environment bible.`,
+      imagePrompt: `${beat.visual} Stylized cinematic 3D animated film frame, clearly non-photorealistic. Preserve the exact established character designs, props, environment architecture and visual continuity. Vertical 9:16 composition.`,
       dialogue: [{ speaker: 'Narrator', text: beat.text }]
     }))
   };
@@ -44,40 +44,46 @@ export async function generateStory(input, env = process.env) {
   if (!account || !token) return localStorySynthesis(input);
 
   const model = env.STORY_MODEL || '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
-  const prompt = `Create an original ${input.genre || 'mystery'} narrated short film about ${input.durationSeconds || 45} seconds long. Idea: ${input.title || 'The Last Signal'}.
+  const prompt = `Create an original standalone animated short film about ${input.durationSeconds || 90} seconds long. Idea: ${input.title || 'The Second Lunch'}. Genre: ${input.genre || 'emotional human story'}.
 Return ONLY one valid JSON object with this exact top-level structure:
-{"title":"...","genre":"...","durationSeconds":45,"environment":"fixed primary setting and visual environment for the whole story","characters":[{"name":"...","gender":"female|male","appearance":"fixed visual description"}],"scenes":[{"id":"s1","duration":5,"location":"...","visual":"...","imagePrompt":"...","dialogue":[{"speaker":"Narrator","text":"..."}]}]}
+{"title":"...","genre":"...","durationSeconds":90,"environment":"fixed visual environment bible","characters":[{"name":"...","gender":"male|female","appearance":"fixed visual description"}],"scenes":[{"id":"s1","duration":9,"location":"...","visual":"exactly what is visible and what each character is doing","imagePrompt":"complete image-generation prompt for this scene","dialogue":[{"speaker":"Narrator","text":"..."}]}]}
 Rules:
-- Create 2-4 recurring original visual characters.
-- Each character must have a fixed gender and detailed appearance (age range, skin tone, hair, hairstyle, clothing/colors, and distinctive features).
-- Use exactly the same character names throughout the story.
-- Never change a character's gender, appearance, clothing identity, or physical traits between scenes.
-- Establish ONE primary visual environment/location for the story and treat it as an environment bible: same architecture, room/area layout, walls, windows, doors, furniture, major objects, color palette, time-of-day and lighting direction across scenes.
-- Keep scenes in that same primary environment by default. Only change location when the plot absolutely requires it, and if a location change happens, keep that new location consistent for every later scene that uses it.
-- Do not randomly replace, redesign, rearrange, or invent the background between scenes. Background continuity is as important as character continuity.
-- Every scene imagePrompt must explicitly restate the relevant environment details and the characters present, not merely say "same location".
-- THIS V1 USES ONE STORYTELLER VOICE ONLY. Every dialogue entry must use exactly speaker "Narrator". Do not create character dialogue, radio voices, announcers, or other speakers.
-- Write natural storytelling narration that describes what happens on screen, with a strong hook, rising tension, and a satisfying ending. Keep narration concise enough to fit the scene duration.
-- Give the recurring characters actions, expressions, and interactions in the visuals even though they do not speak.
-- Do not use copyrighted characters or franchises.
+- This is ONE complete standalone story, not an episode and not part of a series.
+- Target 45-120 seconds. Prefer 8-10 scenes with enough time for the viewer to understand the story.
+- The viewer must understand who the characters are, where they are, what they want, what changes, and why the ending matters without needing another video.
+- Build a strong visual hook in the first 3-8 seconds.
+- Use a simple cause-and-effect story. Avoid random twists, unexplained supernatural events, dream logic, arbitrary coincidences, or endings that require the viewer to invent missing backstory.
+- Give the story a meaningful emotional, practical, human, or thought-provoking payoff. Do not manufacture a twist just for shock.
+- Every scene must visually continue from the previous scene. Explicitly describe character position, pose/action, important props, and environment state.
+- Use 1-3 recurring original visual characters. Keep exact names and appearances throughout.
+- Characters must not speak on screen. They communicate through actions, expressions and body language only.
+- Use exactly one storyteller voice: every dialogue entry MUST have speaker exactly "Narrator".
+- Establish one or two locations maximum. Keep each location internally consistent. Do not randomly change architecture, furniture, props, time of day or lighting.
+- Important props must persist logically. If a character picks up, puts down, opens, closes, gives away or loses an object, the next scene must reflect that change.
+- If time passes, explicitly show or narrate the transition so a visual change does not look like a continuity error.
+- Every imagePrompt must be self-contained: restate the relevant character appearance, exact environment, important props, action, camera framing, lighting and visual style. Never rely on phrases like "same as previous scene".
+- The imagePrompt must describe a stylized cinematic 3D animated film frame, non-photorealistic, vertical 9:16.
+- Narration must describe or naturally support what the viewer can actually see. Do not use narration to hide missing visual information.
+- The final reveal/payoff must be visible in the final scene, not merely explained.
+- No copyrighted characters or franchises.
 - Output valid JSON only. No markdown, comments, or extra text.`;
 
   try {
     const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${account}/ai/v1/chat/completions`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, temperature: 0.5, max_tokens: 5000 })
+      body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' }, temperature: 0.55, max_tokens: 7000 })
     });
     if (!response.ok) throw new Error(`Cloudflare story provider failed: ${response.status} ${await response.text()}`);
     const data = await response.json();
     const content = data.result?.choices?.[0]?.message?.content ?? data.result?.response ?? data.choices?.[0]?.message?.content;
     if (!content) throw new Error('Cloudflare story provider returned no content');
-    const text = String(content).trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    const text = String(content).trim().replace(/^\`\`\`(?:json)?\s*/i, '').replace(/\s*\`\`\`$/i, '').trim();
     const start = text.indexOf('{');
     const end = text.lastIndexOf('}');
     if (start === -1 || end <= start) throw new Error('Cloudflare story provider returned no JSON object');
     const story = JSON.parse(text.slice(start, end + 1));
-    if (!story || typeof story !== 'object' || !Array.isArray(story.scenes) || !Array.isArray(story.characters) || story.characters.length < 2) throw new Error('Cloudflare story provider returned an incomplete story');
+    if (!story || typeof story !== 'object' || !Array.isArray(story.scenes) || !Array.isArray(story.characters) || story.characters.length < 1) throw new Error('Cloudflare story provider returned an incomplete story');
     return story;
   } catch (error) {
     console.warn(`[STORY] Cloudflare unavailable (${error.message}). Using local synthesis fallback.`);
