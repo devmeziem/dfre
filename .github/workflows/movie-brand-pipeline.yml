@@ -6,7 +6,7 @@ name: DFRE - Standalone Cinematic Short Pipeline
 on:
   workflow_dispatch:
     inputs:
-        story:
+      story:
         description: 'Story idea or episode title'
         required: true
         default: 'The Second Lunch'
@@ -56,7 +56,7 @@ env:
 
 jobs:
   movie_brand_pipeline:
-    name: Build & Render Episodic Mini-Movie Reel
+    name: Build & Render Standalone Cinematic Short
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
