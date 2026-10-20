@@ -36,8 +36,9 @@ function items(xml, feed) {
   }).filter(x => x.title && /^https?:\/\//i.test(x.url));
 }
 
-const matchTerms = /\b(bount(y|ies)|grant(s)?|hackathon|prize(s)?|reward(s)?|paid|earn|funding|stipend|contest|bug bounty)\b/i;
-const cryptoTerms = /\b(crypto|web3|blockchain|ethereum|solana|bitcoin|defi|dao|token|on.?chain|wallet|protocol|smart contract)\b/i;
+// These feeds are already crypto/web3-scoped. Keep opportunity matching broad:
+ // announcements often omit words like "crypto" or "grant" from their snippets.
+const opportunityTerms = /\b(grant|funding|bount(y|ies)|hackathon|prize|reward|paid|earn|stipend|contest|competition|challenge|accelerator|incubator|apply|application|builder program|award|fellowship|support program)\b/i;
 const cutoff = Date.now() - 14 * 864e5;
 const found = [];
 for (const feed of FEEDS) {
@@ -48,13 +49,16 @@ for (const feed of FEEDS) {
     });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const xml = await res.text();
-    for (const item of items(xml, feed)) {
-      if (!matchTerms.test(item.title + " " + item.description) ||
-          !cryptoTerms.test(item.title + " " + item.description)) continue;
+    const feedItems = items(xml, feed);
+    let freshMatches = 0;
+    for (const item of feedItems) {
+      if (!opportunityTerms.test(item.title + " " + item.description)) continue;
       const date = Date.parse(item.date || "");
       if (Number.isFinite(date) && date < cutoff) continue;
       found.push(item);
+      freshMatches++;
     }
+    console.log(`Feed checked: ${feed} — ${feedItems.length} entries, ${freshMatches} opportunity matches.`);
   } catch (e) {
     console.warn("Feed skipped:", feed, e.message);
   }
@@ -64,7 +68,7 @@ const unique = [...new Map(found.map(x => [x.url, x])).values()]
   .sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0)
   ).slice(0, LIMIT);
 if (!unique.length) {
-  console.log("No matching fresh opportunities found; nothing posted.");
+  console.log("No matching fresh opportunities found; nothing posted. Check feed counts above; feeds may have no recent opportunity announcements.");
   process.exit(0);
 }
 
