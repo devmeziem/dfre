@@ -24,7 +24,7 @@ The default demo provider is mock; real CI runs select the real providers throug
 
 ## Crypto opportunity Telegram digest
 
-The **Crypto Opportunity Telegram Digest** workflow runs daily at 09:00 UTC and can also be started from **Actions → Crypto Opportunity Telegram Digest → Run workflow**. It reads public RSS/Atom feeds, filters for crypto/web3 opportunities with bounty, grant, hackathon, prize, reward, paid, or funding language, and posts up to 10 recent matches. It does not pad the channel when fewer matches are found.
+The **Crypto Opportunity Telegram Digest** workflow runs four times daily at 08:00, 12:00, 16:00, and 20:00 UTC (09:00, 13:00, 17:00, and 21:00 Nigeria time). Each run posts up to 2 relevant matches and can also be started from **Actions → Crypto Opportunity Telegram Digest → Run workflow**. It reads public RSS/Atom feeds and filters for crypto/web3 opportunities with bounty, grant, hackathon, prize, reward, paid, or funding language. It does not pad the channel when fewer matches are found.
 
 Add these repository **Actions secrets**:
 - `TELEGRAM_BOT_TOKEN` — token from BotFather
