@@ -2,7 +2,7 @@ name: Crypto Opportunity Telegram Digest
 
 on:
   schedule:
-    - cron: "0 9 * * *" # Daily at 09:00 UTC
+    - cron: "0 8,12,16,20 * * *" # Four runs daily (09:00, 13:00, 17:00, 21:00 Nigeria time)
   workflow_dispatch:
 
 permissions:
@@ -28,5 +28,5 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           CRYPTO_OPPORTUNITY_FEEDS: ${{ vars.CRYPTO_OPPORTUNITY_FEEDS }}
-          DAILY_POST_LIMIT: "10"
+          POST_LIMIT: "2"
         run: node scripts/crypto-opportunity-digest.mjs
