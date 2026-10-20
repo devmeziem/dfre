@@ -1,8 +1,10 @@
 // Fetch crypto/web3 opportunity announcements from configured public RSS/Atom feeds
 // and posts up to two relevant items per workflow run. No secrets are logged.
+// Google News RSS search feeds replace publisher feeds that failed in Actions.
 const FEEDS = (process.env.CRYPTO_OPPORTUNITY_FEEDS || [
-  "https://blog.gitcoin.co/feed",
-  "https://dorahacks.io/blog/rss.xml"
+  "https://news.google.com/rss/search?q=crypto+web3+grants+funding+program",
+  "https://news.google.com/rss/search?q=web3+crypto+hackathon+prizes",
+  "https://news.google.com/rss/search?q=crypto+web3+bounty+contest+rewards"
 ].join("\n")).split(/[\n,]+/).map(x => x.trim()).filter(Boolean);
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const CHAT = process.env.TELEGRAM_CHANNEL_ID;
