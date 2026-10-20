@@ -12,12 +12,12 @@ const LIMIT = Math.min(2, Math.max(1, Number(process.env.POST_LIMIT || 2)));
 if (!TOKEN || !CHAT) throw new Error("Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHANNEL_ID secrets.");
 
 const htmlDecode = s => s
-  .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, "$1")
+  .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1")
   // Decode entities before stripping tags; RSS descriptions may encode markup.
   .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
   .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ")
   .replace(/<[^>]+>/g, " ")
-  .replace(/\\s+/g, " ").trim();
+  .replace(/\s+/g, " ").trim();
 
 function items(xml, feed) {
   const blocks = [...xml.matchAll(/<(item|entry)\b[\s\S]*?<\/\1>/gi)].map(m => m[0]);
