@@ -1,6 +1,8 @@
 name: Crypto Opportunity Telegram Digest
 
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: "0 8,12,16,20 * * *" # Four runs daily (09:00, 13:00, 17:00, 21:00 Nigeria time)
   workflow_dispatch:
