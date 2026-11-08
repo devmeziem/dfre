@@ -1,4 +1,4 @@
-name: EDUFORGE - Procedural 3D Short Test
+name: Render short
 
 on:
   workflow_dispatch:
@@ -9,12 +9,12 @@ on:
         default: "seeds/solar_eclipse.json"
   push:
     branches:
-      - edu3d/procedural-solar-eclipse-test
+      - main
     paths:
       - ".github/workflows/eduforge-3d-test.yml"
       - "blender/**"
       - "seeds/**"
-      - "scripts/**"
+      - "scripts/make_narration.py"
 
 permissions:
   contents: read
@@ -29,52 +29,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Blender, FFmpeg and fonts
+      - name: Install rendering tools
         run: |
           sudo apt-get update
           sudo apt-get install -y blender ffmpeg fonts-dejavu-core libegl1 libgl1 libxrender1 libxi6 libxkbcommon0
           python3 -m pip install --user --upgrade edge-tts
 
-      - name: Show tool versions
-        run: |
-          blender --version | head -n 2
-          ffmpeg -version | head -n 1
-          python3 -m edge_tts --version
-
-      - name: Validate seed JSON
+      - name: Validate seed
         run: python3 -m json.tool "$SEED_FILE" > /dev/null
 
-      - name: Render procedural 3D scene
+      - name: Render scene
         run: |
           mkdir -p output
           blender --background --factory-startup --python blender/render_short.py -- \
             --seed "$SEED_FILE" \
             --output "output/scene-silent.mp4"
 
-      - name: Generate Edge TTS narration and timed captions
-        run: |
-          python3 scripts/make_narration.py "$SEED_FILE" output
+      - name: Generate narration and captions
+        run: python3 scripts/make_narration.py "$SEED_FILE" output
 
-      - name: Combine video, narration and captions
+      - name: Assemble final video
         run: |
           ffmpeg -y -i output/scene-silent.mp4 -i output/narration.mp3 \
             -vf "subtitles=output/captions.srt:force_style='FontName=DejaVu Sans,FontSize=18,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101010,BorderStyle=1,Outline=3,Shadow=1,Alignment=2,MarginV=145'" \
             -map 0:v:0 -map 1:a:0 -c:v libx264 -preset veryfast -crf 21 \
             -pix_fmt yuv420p -c:a aac -b:a 160k -shortest \
-            -movflags +faststart output/eduforge-solar-eclipse-test.mp4
+            -movflags +faststart output/eduforge-short.mp4
 
-      - name: Validate final Short
+      - name: Validate output
         run: |
-          test -s output/eduforge-solar-eclipse-test.mp4
-          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/eduforge-solar-eclipse-test.mp4
-          ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of csv=p=0 output/eduforge-solar-eclipse-test.mp4 | grep -q aac
+          test -s output/eduforge-short.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/eduforge-short.mp4
+          ffprobe -v error -select_streams a:0 -show_entries stream=codec_name -of csv=p=0 output/eduforge-short.mp4 | grep -q aac
 
-      - name: Upload finished Short and production files
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: eduforge-solar-eclipse-short-with-voice-captions
+          name: eduforge-short
           path: |
-            output/eduforge-solar-eclipse-test.mp4
+            output/eduforge-short.mp4
             output/narration.mp3
             output/captions.srt
           if-no-files-found: error
