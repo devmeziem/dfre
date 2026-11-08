@@ -21,7 +21,7 @@ rate = data["project"].get("voice_rate", "-5%")
 cmd = [
     sys.executable, "-m", "edge_tts",
     "--voice", voice,
-    "--rate", rate,
+    f"--rate={rate}",
     "--text", text,
     "--write-media", str(audio),
     "--write-subtitles", str(subs),
