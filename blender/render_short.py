@@ -47,6 +47,110 @@ def label(body, loc, size, material, name):
     o=bpy.data.objects.new(name,c); scene.collection.objects.link(o); o.location=loc
     o.rotation_euler=(math.radians(90),0,0); o.data.materials.append(material); return o
 
+
+def render_earwax_test():
+    # Stylized, clean medical cutaway: camera travels into the ear canal.
+    skin = mat("Warm pink ear tissue",(0.62,0.19,0.17),rough=.82)
+    inner = mat("Canal inner tissue",(0.83,0.37,0.33),rough=.78)
+    fold = mat("Raised tissue folds",(0.92,0.49,0.43),rough=.72)
+    waxmat = mat("Golden amber earwax",(0.48,0.24,0.035),rough=.32)
+    waxhi = mat("Wax highlights",(0.72,0.43,0.08),rough=.28)
+    cotton = mat("Cotton white",(0.92,0.91,0.85),rough=.88)
+    stickmat = mat("Swab stem",(0.78,0.78,0.74),rough=.55)
+    drum = mat("Eardrum",(0.48,0.25,0.25),rough=.5)
+    labelmat = mat("Soft white text",(.95,.95,.92),(.5,.5,.5),.35,rough=.6)
+    # Organic tunnel wall, running away from the viewer along +Y.
+    verts=[]; faces=[]; rings=44; sides=64
+    for j in range(rings):
+        t=j/(rings-1); y=-4.8+t*9.1
+        radius=1.42 + .18*math.sin(t*math.pi) + .10*math.sin(t*math.pi*3)
+        for i in range(sides):
+            a=2*math.pi*i/sides
+            ripple=1+.035*math.sin(a*5+t*11)+.018*math.sin(a*9-t*7)
+            verts.append((math.cos(a)*radius*ripple,y,math.sin(a)*radius*ripple))
+    for j in range(rings-1):
+        for i in range(sides):
+            a=j*sides+i; b=j*sides+(i+1)%sides
+            faces.append((a,b,b+sides,a+sides))
+    mesh=bpy.data.meshes.new("EarCanalWallMesh"); mesh.from_pydata(verts,[],faces); mesh.materials.append(inner)
+    wall=bpy.data.objects.new("EAR_CANAL_CROSS_SECTION",mesh); scene.collection.objects.link(wall)
+    for p in mesh.polygons:p.use_smooth=True
+    # Soft tissue folds along the canal wall, kept subtle and non-graphic.
+    for k in range(9):
+        angle=2*math.pi*k/9
+        x=math.cos(angle)*1.34; z=math.sin(angle)*1.34
+        bpy.ops.mesh.primitive_torus_add(major_radius=.26,minor_radius=.055,major_segments=32,minor_segments=10,location=(x,-1.6+(k%3)*1.35,z),rotation=(math.pi/2,0,angle))
+        o=bpy.context.object; o.name="Canal_Fold_%02d"%k; o.scale=(1.0,.62,1.0); o.data.materials.append(fold)
+    # Eardrum at the far end, a thin oval membrane facing the camera.
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=48,ring_count=24,radius=1,location=(0,4.25,0))
+    membrane=bpy.context.object; membrane.name="EARDRUM"; membrane.scale=(1.12,.12,1.12); membrane.data.materials.append(drum); bpy.ops.object.shade_smooth()
+    bpy.ops.mesh.primitive_torus_add(major_radius=1.17,minor_radius=.09,major_segments=64,minor_segments=12,location=(0,4.12,0),rotation=(math.pi/2,0,0))
+    rim=bpy.context.object; rim.name="Eardrum_Rim"; rim.data.materials.append(fold)
+    # Wax is a soft, irregular golden mass near the foreground of the canal.
+    wax_parts=[]
+    for idx,(loc,scale) in enumerate([
+        ((-.12,-2.45,-.72),(.78,.48,.48)),
+        ((.42,-2.55,-.48),(.52,.42,.40)),
+        ((-.55,-2.35,-.55),(.43,.38,.34)),
+        ((.03,-2.18,-.32),(.38,.32,.30))
+    ]):
+        o=ball("EARWAX_%02d"%idx,loc,1,waxmat,32,20); o.scale=scale; wax_parts.append(o)
+    # Small glossy deposits make the wax read as moist amber, not a flat blob.
+    for idx,loc in enumerate([(-.35,-2.0,-.18),(.35,-2.08,-.2),(.05,-1.92,-.48)]):
+        o=ball("Wax_Glint_%02d"%idx,loc,.07,waxhi,16,10)
+    # Cotton swab: stem and cotton tip enter diagonally from lower-left.
+    def rod_between(name,a,b,radius,material,vertices=24):
+        mid=(Vector(a)+Vector(b))/2; vec=Vector(b)-Vector(a)
+        bpy.ops.mesh.primitive_cylinder_add(vertices=vertices,radius=radius,depth=vec.length,location=mid)
+        o=bpy.context.object; o.name=name; o.rotation_euler=vec.to_track_quat("Z","Y").to_euler(); o.data.materials.append(material)
+        return o
+    stem=rod_between("COTTON_SWAB_STEM",(-2.9,-3.7,-2.25),(-.62,-1.9,-1.05),.075,stickmat)
+    tip=ball("COTTON_SWAB_TIP",(-.62,-1.9,-1.05),.24,cotton,32,20); tip.scale=(.68,1.25,.68)
+    # Camera moves forward through the tunnel; swab advances slightly, then pauses.
+    bpy.ops.object.camera_add(location=(0,-12.5,.05)); cam=bpy.context.object; cam.name="EarJourneyCamera"; cam.data.lens=43; aim(cam,(0,1.0,0)); scene.camera=cam
+    cam.location=(0,-12.5,.05); cam.keyframe_insert(data_path="location",frame=1)
+    cam.location=(0,-9.0,.02); cam.keyframe_insert(data_path="location",frame=last)
+    # Animate the swab tip gently deeper to illustrate why wax may be pushed inward.
+    for obj in (stem,tip):
+        original=obj.location.copy()
+        obj.keyframe_insert(data_path="location",frame=1)
+        obj.location=original+Vector((.16,1.0,.10))
+        obj.keyframe_insert(data_path="location",frame=int(last*.62))
+        obj.keyframe_insert(data_path="location",frame=last)
+    # Soft studio lighting and warm background.
+    scene.world.color=(.16,.045,.04)
+    bpy.ops.object.light_add(type="AREA",location=(-4,-5,6)); key=bpy.context.object; key.data.energy=1150; key.data.size=5; aim(key,(0,0,0))
+    bpy.ops.object.light_add(type="AREA",location=(4,1,-3)); fill=bpy.context.object; fill.data.energy=650; fill.data.size=4; aim(fill,(0,1,0))
+    bpy.ops.object.light_add(type="AREA",location=(0,4,4)); rimlight=bpy.context.object; rimlight.data.energy=500; rimlight.data.size=3; aim(rimlight,(0,3,0))
+    # Title/callouts face the camera and remain in the safe upper area.
+    def overlay(body, frame, end, z=3.15):
+        c=bpy.data.curves.new("OverlayText","FONT"); c.body=body; c.size=.22; c.extrude=0
+        o=bpy.data.objects.new("Overlay_"+body,c); scene.collection.objects.link(o)
+        o.location=(-1.48,-4.9,z); o.rotation_euler=(math.pi/2,0,0); o.data.materials.append(labelmat)
+        o.hide_render=True; o.keyframe_insert(data_path="hide_render",frame=1)
+        o.hide_render=False; o.keyframe_insert(data_path="hide_render",frame=frame)
+        o.hide_render=True; o.keyframe_insert(data_path="hide_render",frame=end+1)
+    overlay("WHY DOES EARWAX FORM?",1,int(last*.22))
+    overlay("THE EAR CANAL MOVES WAX OUTWARD",int(last*.25),int(last*.58))
+    overlay("COTTON SWABS CAN PUSH WAX DEEPER",int(last*.60),last)
+    # Fast, clean EEVEE render settings; no expensive compositor glow or particle stars.
+    scene.render.engine="BLENDER_EEVEE"
+    scene.eevee.taa_render_samples=8
+    scene.render.resolution_percentage=100
+    scene.render.image_settings.file_format="FFMPEG"
+    scene.render.ffmpeg.format="MPEG4"; scene.render.ffmpeg.codec="H264"
+    scene.render.ffmpeg.constant_rate_factor="MEDIUM"; scene.render.ffmpeg.ffmpeg_preset="REALTIME"
+    scene.render.filepath=output_path
+    os.makedirs(os.path.dirname(output_path),exist_ok=True); scene.frame_set(1)
+    print("EDUFORGE_EAR_RENDER_START",json.dumps({"title":project["title"],"frames":last,"resolution":[width,height]}),flush=True)
+    bpy.ops.render.render(animation=True)
+    print("EDUFORGE_EAR_RENDER_COMPLETE",output_path,flush=True)
+
+if data.get("scene_type")=="earwax":
+    render_earwax_test()
+    raise SystemExit(0)
+
+
 sunmat=mat("Solar gold",(1,.25,.015),(1,.22,.01),5,1)
 earthmat=mat("Ocean blue",(.018,.12,.48),rough=.38,metallic=.08)
 landmat=mat("Continents",(.06,.34,.16),rough=.8)
