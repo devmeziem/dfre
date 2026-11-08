@@ -57,35 +57,35 @@ shadowmat=mat("Shadow cone",(.008,.012,.035),rough=1)
 starmat=mat("Stars",(.55,.7,1),(.4,.6,1),1.5)
 random.seed(17)
 for i in range(110):
-    ball("Star_%03d"%i,(random.uniform(-13,13),random.uniform(2,8),random.uniform(-9,9)),
+    ball("Star_%03d"%i,(random.uniform(-5,5),random.uniform(2,8),random.uniform(-11,11)),
          random.uniform(.012,.03),starmat,8,6)
 
-sun=ball("SUN",(-6,0,0),2,sunmat)
-earth=ball("EARTH",(5,0,0),1.35,earthmat)
+sun=ball("SUN",(0,0,5),2,sunmat)
+earth=ball("EARTH",(0,0,-5),1.35,earthmat)
 for i,(loc,scale) in enumerate([
-    ((4.55,-1.05,.45),(.42,.12,.28)),((5.45,-1,-.25),(.34,.1,.48)),((4.95,-1.08,.85),(.25,.08,.18))
+    ((-.45,-1.05,-4.55),(.42,.12,.28)),((.45,-1,-5.15),(.34,.1,.48)),((.05,-1.08,-4.15),(.25,.08,.18))
 ]):
     bpy.ops.mesh.primitive_uv_sphere_add(segments=20,ring_count=12,radius=1,location=loc)
     p=bpy.context.object; p.name="Land_%d"%i; p.scale=scale; p.data.materials.append(landmat)
-moon=ball("MOON",(0,0,2.7),.48,moonmat)
+moon=ball("MOON",(2.7,0,0),.48,moonmat)
 
-bpy.ops.mesh.primitive_cone_add(vertices=40,radius1=.12,radius2=.78,depth=3.5,location=(2.65,.15,0))
-cone=bpy.context.object; cone.name="MOON_SHADOW_CONE"; cone.rotation_euler[1]=math.radians(90); cone.data.materials.append(shadowmat)
+bpy.ops.mesh.primitive_cone_add(vertices=40,radius1=.78,radius2=.12,depth=3.5,location=(0,.15,-2.5))
+cone=bpy.context.object; cone.name="MOON_SHADOW_CONE";  cone.data.materials.append(shadowmat)
 
 bpy.ops.object.light_add(type="AREA",location=(-5,-8,7))
 key=bpy.context.object; key.data.energy=1800; key.data.shape="DISK"; key.data.size=8; aim(key,(0,0,0))
-bpy.ops.object.light_add(type="AREA",location=(5,3,5))
-fill=bpy.context.object; fill.data.energy=900; fill.data.size=6; aim(fill,(4,0,0))
+bpy.ops.object.light_add(type="AREA",location=(5,3,-3))
+fill=bpy.context.object; fill.data.energy=900; fill.data.size=6; aim(fill,(0,0,-5))
 
 cd=bpy.data.cameras.new("EducationalCamera"); cam=bpy.data.objects.new("EducationalCamera",cd)
-scene.collection.objects.link(cam); cam.location=(0,-23,8.5); cd.lens=48; aim(cam,(0,0,0)); scene.camera=cam
-cam.location=(-.8,-24,9.2); cam.keyframe_insert(data_path="location",frame=1)
-cam.location=(.6,-22.5,8); cam.keyframe_insert(data_path="location",frame=last)
+scene.collection.objects.link(cam); cam.location=(0,-26,0); cd.lens=42; aim(cam,(0,0,0)); scene.camera=cam
+cam.location=(-.5,-27,1.0); cam.keyframe_insert(data_path="location",frame=1)
+cam.location=(.5,-25,0); cam.keyframe_insert(data_path="location",frame=last)
 
 anim=spec.get("animation",{})
-moon.location=Vector(anim.get("moon_start",[0,0,2.7])); moon.keyframe_insert(data_path="location",frame=1)
+moon.location=Vector(anim.get("moon_start",[2.7,0,0])); moon.keyframe_insert(data_path="location",frame=1)
 moon.location=Vector(anim.get("moon_alignment",[0,0,0])); moon.keyframe_insert(data_path="location",frame=int(anim.get("alignment_frame",last//2)))
-moon.location=Vector(anim.get("moon_end",[0,0,-.25])); moon.keyframe_insert(data_path="location",frame=last)
+moon.location=Vector(anim.get("moon_end",[-.25,0,0])); moon.keyframe_insert(data_path="location",frame=last)
 
 curve=bpy.data.curves.new("MoonOrbit","CURVE"); curve.dimensions="3D"; curve.bevel_depth=.012; curve.bevel_resolution=2
 sp=curve.splines.new("POLY"); sp.points.add(63)
@@ -93,10 +93,10 @@ for i,p in enumerate(sp.points):
     a=i/63*math.tau; p.co=(math.cos(a)*3.1,.1,math.sin(a)*2.7,1)
 orbit=bpy.data.objects.new("MoonOrbit",curve); scene.collection.objects.link(orbit); orbit.data.materials.append(orbitmat)
 
-label("HOW A SOLAR ECLIPSE HAPPENS",(-8.2,-2,7),.52,whitemat,"Title")
-label("SUN",(-7,-2,-2.2),.4,whitemat,"SunLabel")
-label("MOON",(-.7,-2,-2.2),.34,whitemat,"MoonLabel")
-label("EARTH",(4,-2,-2.2),.4,whitemat,"EarthLabel")
+label("HOW A SOLAR ECLIPSE HAPPENS",(-2.9,-2,9),.48,whitemat,"Title")
+label("SUN",(-.8,-2,2.5),.4,whitemat,"SunLabel")
+label("MOON",(-.9,-2,-1.8),.34,whitemat,"MoonLabel")
+label("EARTH",(-.9,-2,-7.2),.4,whitemat,"EarthLabel")
 for i,item in enumerate(spec.get("callouts",[])):
     o=label(item["text"],item["position"],.25,whitemat,"Callout_%02d"%i)
     start=max(1,int(item.get("start_frame",1))); end=min(last,int(item.get("end_frame",last)))
