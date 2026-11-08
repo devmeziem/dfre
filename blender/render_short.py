@@ -69,7 +69,7 @@ for i,(loc,scale) in enumerate([
     p=bpy.context.object; p.name="Land_%d"%i; p.scale=scale; p.data.materials.append(landmat)
 moon=ball("MOON",(2.7,0,0),.48,moonmat)
 
-bpy.ops.mesh.primitive_cone_add(vertices=40,radius1=.78,radius2=.12,depth=3.5,location=(0,.15,-2.5))
+bpy.ops.mesh.primitive_cone_add(vertices=40,radius1=.12,radius2=.78,depth=3.5,location=(0,.15,-2.5))
 cone=bpy.context.object; cone.name="MOON_SHADOW_CONE";  cone.data.materials.append(shadowmat)
 
 bpy.ops.object.light_add(type="AREA",location=(-5,-8,7))
