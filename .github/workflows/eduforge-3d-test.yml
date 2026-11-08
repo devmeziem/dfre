@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
-      SEED_FILE: ${{ github.event.inputs.seed || 'seeds/solar_eclipse.json' }}
+      SEED_FILE: ${{ github.event.inputs.seed || (github.event_name == 'push' && 'seeds/earwax.json' || 'seeds/solar_eclipse.json') }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
