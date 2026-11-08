@@ -16,7 +16,7 @@ last = max(2, round(duration * fps))
 
 bpy.ops.object.select_all(action="SELECT"); bpy.ops.object.delete(use_global=False)
 scene = bpy.context.scene
-scene.render.engine = "BLENDER_EEVEE_NEXT"
+scene.render.engine = "BLENDER_EEVEE"
 scene.render.resolution_x=width; scene.render.resolution_y=height; scene.render.resolution_percentage=100
 scene.render.fps=fps; scene.frame_start=1; scene.frame_end=last
 scene.render.image_settings.file_format="FFMPEG"
