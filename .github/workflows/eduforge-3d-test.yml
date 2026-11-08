@@ -1,0 +1,51 @@
+name: EDUFORGE - Procedural 3D Short Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Seed JSON path"
+        required: true
+        default: "seeds/solar_eclipse.json"
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Blender and FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender ffmpeg
+
+      - name: Show Blender version
+        run: blender --version | head -n 2
+
+      - name: Validate seed JSON
+        run: python3 -m json.tool "${{ inputs.seed }}" > /dev/null
+
+      - name: Render procedural 3D Short
+        run: |
+          mkdir -p output
+          blender --background --factory-startup --python blender/render_short.py -- \
+            --seed "${{ inputs.seed }}" \
+            --output "output/eduforge-solar-eclipse-test.mp4"
+
+      - name: Validate rendered video
+        run: |
+          test -s output/eduforge-solar-eclipse-test.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/eduforge-solar-eclipse-test.mp4
+
+      - name: Upload test video
+        uses: actions/upload-artifact@v4
+        with:
+          name: eduforge-procedural-3d-short
+          path: output/eduforge-solar-eclipse-test.mp4
+          if-no-files-found: error
+          retention-days: 7
