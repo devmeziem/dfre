@@ -1,0 +1,154 @@
+{
+  "project": {
+    "id": "solar-eclipse-001",
+    "title": "How a Solar Eclipse Happens",
+    "topic": "General education / astronomy",
+    "format": "youtube_short",
+    "aspect_ratio": "9:16",
+    "duration_seconds": 15,
+    "fps": 24,
+    "resolution": {
+      "width": 720,
+      "height": 1280
+    },
+    "visual_style": "cinematic educational 3D, deep-space navy background, luminous sun, blue Earth, clean readable labels",
+    "educational_goal": "Explain that the Moon passes between the Sun and Earth and casts its shadow on part of Earth.",
+    "source_notes": [
+      "A solar eclipse occurs when the Moon passes between the Sun and Earth.",
+      "The Moon blocks some or all sunlight for observers in the shadow path.",
+      "A total solar eclipse is visible from the Moon's umbra; a partial eclipse is visible from the penumbra."
+    ]
+  },
+  "scene": {
+    "environment": "deep_space",
+    "objects": [
+      {
+        "id": "sun",
+        "type": "emissive_sphere",
+        "position": [
+          -6,
+          0,
+          0
+        ],
+        "scale": 2,
+        "color": "#FFB33F"
+      },
+      {
+        "id": "earth",
+        "type": "planet",
+        "position": [
+          5,
+          0,
+          0
+        ],
+        "scale": 1.35,
+        "color": "#2479D8"
+      },
+      {
+        "id": "moon",
+        "type": "rocky_moon",
+        "position": [
+          0,
+          0,
+          2.7
+        ],
+        "scale": 0.48,
+        "color": "#A8AEB8"
+      },
+      {
+        "id": "shadow_cone",
+        "type": "shadow_cone",
+        "from": [
+          0.5,
+          0,
+          0
+        ],
+        "to": [
+          3.7,
+          0,
+          0
+        ]
+      }
+    ],
+    "camera": {
+      "position": [
+        0,
+        -23,
+        8.5
+      ],
+      "target": [
+        0,
+        0,
+        0
+      ],
+      "lens": 48
+    },
+    "animation": {
+      "moon_start": [
+        0,
+        0,
+        2.7
+      ],
+      "moon_alignment": [
+        0,
+        0,
+        0
+      ],
+      "moon_end": [
+        0,
+        0,
+        -0.25
+      ],
+      "alignment_frame": 190
+    },
+    "callouts": [
+      {
+        "text": "SUNLIGHT",
+        "position": [
+          -6.9,
+          -1.9,
+          2.7
+        ],
+        "start_frame": 1,
+        "end_frame": 120
+      },
+      {
+        "text": "THE MOON MOVES BETWEEN THEM",
+        "position": [
+          -4.8,
+          -1.9,
+          -3.1
+        ],
+        "start_frame": 100,
+        "end_frame": 260
+      },
+      {
+        "text": "ITS SHADOW FALLS ON EARTH",
+        "position": [
+          1.2,
+          -1.9,
+          -3.1
+        ],
+        "start_frame": 230,
+        "end_frame": 360
+      }
+    ],
+    "narration_beats": [
+      {
+        "start": 0,
+        "end": 4,
+        "text": "A solar eclipse happens when the Moon moves between the Sun and Earth."
+      },
+      {
+        "start": 4,
+        "end": 9,
+        "text": "For a moment, the Moon blocks sunlight and its shadow travels across Earth."
+      },
+      {
+        "start": 9,
+        "end": 15,
+        "text": "People inside the darkest part of that shadow can see a total solar eclipse."
+      }
+    ]
+  }
+}
