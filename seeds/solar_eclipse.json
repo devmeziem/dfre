@@ -26,9 +26,9 @@
         "id": "sun",
         "type": "emissive_sphere",
         "position": [
-          -6,
           0,
-          0
+          0,
+          5
         ],
         "scale": 2,
         "color": "#FFB33F"
@@ -37,9 +37,9 @@
         "id": "earth",
         "type": "planet",
         "position": [
-          5,
           0,
-          0
+          0,
+          -5
         ],
         "scale": 1.35,
         "color": "#2479D8"
@@ -48,9 +48,9 @@
         "id": "moon",
         "type": "rocky_moon",
         "position": [
+          2.7,
           0,
-          0,
-          2.7
+          0
         ],
         "scale": 0.48,
         "color": "#A8AEB8"
@@ -59,35 +59,35 @@
         "id": "shadow_cone",
         "type": "shadow_cone",
         "from": [
-          0.5,
           0,
-          0
+          0,
+          -0.7
         ],
         "to": [
-          3.7,
           0,
-          0
+          0,
+          -4.2
         ]
       }
     ],
     "camera": {
       "position": [
         0,
-        -23,
-        8.5
+        -26,
+        0
       ],
       "target": [
         0,
         0,
         0
       ],
-      "lens": 48
+      "lens": 42
     },
     "animation": {
       "moon_start": [
+        2.7,
         0,
-        0,
-        2.7
+        0
       ],
       "moon_alignment": [
         0,
@@ -95,9 +95,9 @@
         0
       ],
       "moon_end": [
+        -0.25,
         0,
-        0,
-        -0.25
+        0
       ],
       "alignment_frame": 190
     },
@@ -105,9 +105,9 @@
       {
         "text": "SUNLIGHT",
         "position": [
-          -6.9,
+          -2.7,
           -1.9,
-          2.7
+          3
         ],
         "start_frame": 1,
         "end_frame": 120
@@ -115,9 +115,9 @@
       {
         "text": "THE MOON MOVES BETWEEN THEM",
         "position": [
-          -4.8,
+          -2.9,
           -1.9,
-          -3.1
+          -2
         ],
         "start_frame": 100,
         "end_frame": 260
@@ -125,9 +125,9 @@
       {
         "text": "ITS SHADOW FALLS ON EARTH",
         "position": [
-          1.2,
+          -2.8,
           -1.9,
-          -3.1
+          -8
         ],
         "start_frame": 230,
         "end_frame": 360
