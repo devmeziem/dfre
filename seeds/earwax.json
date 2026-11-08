@@ -1,50 +1,47 @@
 {
   "project": {
-    "id": "earwax-3d-test-001",
-    "title": "Does a Q-Tip Actually Clean Your Ears?",
-    "topic": "Human anatomy / earwax",
+    "id": "earwax-3d-test-002",
+    "title": "What Really Happens When You Use a Cotton Swab?",
+    "topic": "Human anatomy and earwax",
     "format": "youtube_short",
     "aspect_ratio": "9:16",
-    "duration_seconds": 24,
+    "duration_seconds": 30,
     "fps": 24,
     "resolution": {
-      "width": 540,
-      "height": 960
+      "width": 720,
+      "height": 1280
     },
     "voice": "en-US-AriaNeural",
-    "voice_rate": "-5%",
-    "visual_style": "cinematic close-up 3D medical animation, warm coral-pink ear canal tunnel, organic soft tissue folds, glossy amber earwax, white cotton swab, anatomical cutaway, smooth camera journey",
-    "educational_goal": "Explain how earwax forms, how the ear naturally moves it outward, and why cotton swabs can push wax deeper.",
-    "source_notes": [
-      "Earwax is made in the outer part of the ear canal by glands and skin cells.",
-      "Earwax helps trap dust and debris and protects the ear canal.",
-      "The skin of the ear canal gradually migrates outward, helping move wax toward the opening.",
-      "Cotton swabs can push wax deeper into the canal and may injure the ear."
-    ]
+    "voice_rate": "-8%",
+    "visual_style": "cinematic 3D medical anatomy, close macro shots, warm pink ear tissue, visible open ear canal cutaway, realistic soft cotton swab head, amber wax attached to canal wall, dynamic multi-shot camera"
   },
   "scene_type": "earwax",
   "scene": {
-    "environment": "warm anatomical ear canal cutaway",
     "narration_beats": [
       {
         "start": 0,
         "end": 5,
-        "text": "Inside your ear, a natural substance called earwax is constantly being made. It helps trap dust and protects the delicate skin of your ear canal."
+        "text": "Your ears make earwax for a reason. It traps dust, tiny particles and helps protect the skin inside your ear canal."
       },
       {
         "start": 5,
-        "end": 11,
-        "text": "Your ear canal slowly moves its skin outward, carrying old wax and trapped debris toward the opening. Most of the time, your ears clean themselves."
+        "end": 10,
+        "text": "The wax is made in the outer part of the canal. The skin slowly moves outward, carrying old wax toward the ear opening."
       },
       {
-        "start": 11,
-        "end": 18,
-        "text": "But pushing a cotton swab into the canal can move wax in the opposite direction, packing it deeper instead of bringing it out."
+        "start": 10,
+        "end": 16,
+        "text": "Now watch what happens when a cotton swab goes inside. Its soft cotton tip presses against the wax instead of simply lifting it out."
       },
       {
-        "start": 18,
-        "end": 24,
-        "text": "That is why cotton swabs should not be pushed inside the ear canal. The outer ear is enough for ordinary cleaning."
+        "start": 16,
+        "end": 23,
+        "text": "The swab can push that wax farther inward, where it may build up and block the canal. The eardrum sits deeper inside and needs protection."
+      },
+      {
+        "start": 23,
+        "end": 30,
+        "text": "So don't push cotton swabs into your ear canal. Clean only the outer ear, and get help if you have pain or blocked hearing."
       }
     ]
   }
