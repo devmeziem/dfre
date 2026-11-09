@@ -42,7 +42,7 @@ for fx in [-5.0,-4.5,4.6,5.1]:
   ball("FLOWER_PETAL",(fx+math.cos(ang)*.13,-1.45+math.sin(ang)*.13,.22),(.09,.07,.055),petalmat)
 # A classic line-stickman: oversized round head, single thin-line torso,
 # simple line limbs. No torso volume, hip ball, bulky joints, hands or shoes.
-white=mat("Porcelain stickman",(.96,.97,.93),.42); ink=mat("Face ink",(.025,.035,.045),.5); nosemat=mat("Orange nose",(.92,.34,.12),.5)
+white=mat("Porcelain stickman",(.96,.97,.93),.42); ink=mat("Face ink",(.025,.035,.045),.5)
 parts={"head":ball("HERO_HEAD",(0,0,2),(.34,.31,.36),white),"torso":seg("HERO_TORSO",white,.027)}
 # Hand-drawn stickman face, following the supplied reference:
 # clean black ink strokes, expressive curved eyes and a clear open smile.
