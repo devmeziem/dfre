@@ -1,0 +1,10 @@
+{
+  "id": "tunde",
+  "display_name": "Tunde Balogun",
+  "role": "Sports and world wire",
+  "voice": "en-GB-RyanNeural",
+  "skin": [0.95, 0.96, 0.92],
+  "outfit": [0.15, 0.18, 0.22],
+  "accent": [0.95, 0.55, 0.10],
+  "default_pose": "seated_desk"
+}
