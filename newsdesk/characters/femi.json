@@ -1,0 +1,10 @@
+{
+  "id": "femi",
+  "display_name": "Femi Adeyemi",
+  "role": "Politics / national desk",
+  "voice": "en-NG-AbeoNeural",
+  "skin": [0.94, 0.95, 0.90],
+  "outfit": [0.08, 0.12, 0.18],
+  "accent": [0.20, 0.55, 0.35],
+  "default_pose": "seated_desk"
+}
