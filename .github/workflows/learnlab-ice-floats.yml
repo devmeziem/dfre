@@ -47,7 +47,7 @@ jobs:
           ffmpeg -hide_banner -y \
             -i output/learnlab/scene-silent.mp4 \
             -i output/learnlab/narration.wav \
-            -vf "subtitles=output/learnlab/captions.srt:force_style='FontName=DejaVu Sans,FontSize=32,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101010,BorderStyle=1,Outline=3,Shadow=1,Alignment=2,MarginV=90'" \
+            -vf "subtitles=output/learnlab/captions.srt:force_style='FontName=DejaVu Sans,FontSize=6,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101010,BorderStyle=1,Outline=1,Shadow=1,Alignment=2,MarginV=20'" \
             -map 0:v:0 -map 1:a:0 \
             -c:v libx264 -preset veryfast -crf 21 -pix_fmt yuv420p \
             -c:a aac -b:a 160k -shortest -movflags +faststart \
