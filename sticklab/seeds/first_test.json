@@ -1,0 +1,33 @@
+{
+  "project": {
+    "id": "sticklab-room-test-001",
+    "title": "A Stickman Walks Into a Room",
+    "topic": "3D stickman animation test",
+    "format": "youtube_short",
+    "width": 720,
+    "height": 1280,
+    "fps": 24,
+    "duration_seconds": 14,
+    "voice": "en-US-AriaNeural",
+    "voice_rate": "-5%"
+  },
+  "scene": {
+    "narration_beats": [
+      {
+        "start": 0,
+        "end": 4,
+        "text": "Meet our little stickman. He has just walked into a quiet living room."
+      },
+      {
+        "start": 4,
+        "end": 9,
+        "text": "He takes a few careful steps, looks around, and notices something interesting."
+      },
+      {
+        "start": 9,
+        "end": 14,
+        "text": "Then he stops, turns toward us, and gives a friendly wave."
+      }
+    ]
+  }
+}
