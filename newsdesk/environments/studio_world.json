@@ -1,0 +1,10 @@
+{
+  "id": "studio_world",
+  "name": "World affairs",
+  "wall": [0.05, 0.08, 0.14],
+  "accent": [0.25, 0.45, 0.75],
+  "desk": [0.10, 0.12, 0.16],
+  "boards": 3,
+  "ticker": { "bg": [0.15, 0.25, 0.55], "text": [1, 1, 1] },
+  "lighting": "cool_blue"
+}
