@@ -1,0 +1,22 @@
+{
+  "project": {
+    "fps": 24,
+    "width": 1280,
+    "height": 720,
+    "duration_seconds": 12,
+    "title": "9jaBeacon Newsdesk Test"
+  },
+  "character": "newsdesk/characters/ada.json",
+  "environment": "newsdesk/environments/studio_main.json",
+  "headline": "SERAP demands full disclosure on N50,000 NERSI relief",
+  "ticker": "9jaBeacon · Verified Naija wire · www.9jabeacon.name.ng · Follow on WhatsApp",
+  "boards": [
+    { "label": "LEAD", "color": [0.15, 0.45, 0.35] },
+    { "label": "CONTEXT", "color": [0.20, 0.30, 0.50] },
+    { "label": "NEXT", "color": [0.35, 0.20, 0.40] }
+  ],
+  "narration": {
+    "text": "Good evening. This is a 9jaBeacon newsdesk test. Ada Okoro at the main desk. Three studio boards, a live ticker, and a seated presenter in a procedural Blender environment.",
+    "voice": "en-NG-EzinneNeural"
+  }
+}
