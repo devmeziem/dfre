@@ -42,6 +42,9 @@ for candidate in ("BLENDER_EEVEE_NEXT", "BLENDER_EEVEE"):
 scene.render.resolution_x = width
 scene.render.resolution_y = height
 scene.render.resolution_percentage = 100
+eevee_settings = getattr(scene, "eevee", None)
+if eevee_settings is not None and hasattr(eevee_settings, "taa_render_samples"):
+    eevee_settings.taa_render_samples = 8
 scene.render.fps = fps
 scene.frame_start = 1
 scene.frame_end = last_frame
