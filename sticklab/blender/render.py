@@ -19,79 +19,73 @@ def putseg(o,a,b,f):
  va=Vector(a); vb=Vector(b); d=vb-va; o.location=(va+vb)/2; o.rotation_euler=d.to_track_quat("Z","Y").to_euler(); o.scale.z=d.length
  o.keyframe_insert(data_path="location",frame=f); o.keyframe_insert(data_path="rotation_euler",frame=f); o.keyframe_insert(data_path="scale",frame=f)
 def keyball(o,loc,f): o.location=loc; o.keyframe_insert(data_path="location",frame=f)
-# Furnished living room environment
-floor=mat("Oak floor",(.30,.18,.12)); wall=mat("Sage walls",(.36,.48,.41)); cream=mat("Cream trim",(.84,.77,.64)); teal=mat("Deep teal sofa",(.035,.12,.15)); orange=mat("Terracotta",(.72,.27,.15)); wood=mat("Walnut",(.22,.12,.07)); blue=mat("Window glass",(.19,.42,.55),.2); green=mat("Plant green",(.12,.34,.18)); white=mat("Porcelain white",(.92,.93,.90),.38); black=mat("Charcoal joints",(.025,.035,.04),.4)
-cube("FLOOR",(0,0,-.13),(12,9,.25),floor); cube("BACK_WALL",(0,3.8,3),(12,.2,6),wall); cube("LEFT_WALL",(-5.9,0,3),(.2,8,6),wall); cube("BASEBOARD",(0,3.66,.15),(11.7,.1,.22),cream)
-cube("WINDOW_FRAME",(-3.4,3.61,3.5),(2.1,.12,2),cream); cube("WINDOW_GLASS",(-3.4,3.53,3.5),(1.8,.04,1.7),blue); cube("WINDOW_SILL",(-3.4,3.4,2.48),(2.3,.3,.12),wood)
-cube("DOOR_FRAME",(3.9,3.58,1.55),(1.55,.18,3.1),cream); door=cube("DOOR",(3.9,3.43,1.55),(1.32,.12,2.9),wood)
-ball("DOOR_HANDLE",(4.38,3.32,1.5),(.07,.07,.07),orange)
-cube("SOFA_BASE",(-1.8,1.15,.48),(2.4,.95,.55),teal,.15); cube("SOFA_BACK",(-1.8,1.55,1.05),(2.4,.28,1),teal,.15)
-for x in [-2.55,-1.8,-1.05]: cube("SOFA_CUSHION",(x,.95,.83),(.68,.65,.2),orange,.1)
-cube("COFFEE_TABLE",(0,.45,.48),(1.55,.85,.13),wood)
-for x in [-.62,.62]:
- for y in [.15,.75]: cube("TABLE_LEG",(x,y,.23),(.09,.09,.48),wood,.02)
-cube("BOOK",(0,.42,.59),(.48,.32,.055),orange,.01)
-cube("SIDE_TABLE",(-4,1.5,.55),(.8,.7,.12),wood)
-for x in [-4.28,-3.72]: cube("SIDE_TABLE_LEG",(x,1.5,.28),(.08,.08,.5),wood,.02)
-ball("LAMP_SHADE",(-4,1.5,1.25),(.27,.27,.35),cream)
-bpy.ops.mesh.primitive_cone_add(vertices=24,radius1=.24,radius2=.16,depth=.42,location=(4.8,2.7,.21)); bpy.context.object.name="PLANT_POT"; bpy.context.object.data.materials.append(orange)
-for i in range(7):
- a=i*math.tau/7; leaf=ball("PLANT_LEAF",(4.8+math.cos(a)*.18,2.7,.75+math.sin(a)*.13),(.12,.07,.48),green); leaf.rotation_euler[1]=-math.cos(a)*.45
-# Rounded white 3D stickman, individually animated limb segments
-parts={"head":ball("HERO_HEAD",(0,0,2),(.34,.31,.36),white),"torso":seg("HERO_TORSO",white,.065),"neck":seg("HERO_NECK",white,.045),"hip":ball("HERO_HIP",(0,0,.93),(.23,.18,.18),black)}
-ball("HERO_EYE_LEFT",(-.13,-.292,2.06),(.075,.035,.09),black)
-ball("HERO_EYE_RIGHT",(.13,-.292,2.03),(.045,.03,.055),black)
-ball("HERO_PUPIL_LEFT",(-.12,-.325,2.06),(.025,.012,.035),white)
-ball("HERO_PUPIL_RIGHT",(.14,-.321,2.03),(.018,.012,.025),white)
-ball("HERO_NOSE",(0,-.355,1.96),(.065,.075,.075),orange)
-# Curved, expressive smile on the front of the face
-mouth_curve=bpy.data.curves.new("HERO_FUNNY_SMILE","CURVE"); mouth_curve.dimensions="3D"; mouth_curve.bevel_depth=.018; mouth_curve.bevel_resolution=3
+# Sunny neighborhood park environment — completely replaces the indoor room.
+grass=mat("Fresh park grass",(.19,.38,.20)); pathmat=mat("Warm park path",(.72,.61,.43)); bark=mat("Tree bark",(.25,.13,.07)); leaf=mat("Leaf canopy",(.12,.31,.13)); leaf2=mat("Sunlit leaves",(.28,.46,.17)); sky=mat("Soft blue sky",(.42,.68,.82)); benchmat=mat("Park bench wood",(.43,.22,.10)); metal=mat("Bench dark metal",(.10,.13,.13)); flower=mat("Flower yellow",(.95,.65,.12))
+cube("PARK_GROUND",(0,0,-.18),(30,18,.3),grass)
+cube("WALKING_PATH",(0,-.15,-.015),(14,2.25,.08),pathmat,.18)
+cube("DISTANT_SKY_BACKDROP",(0,5.8,5),(30,.25,10),sky)
+# Trees frame the scene without crowding the walking area.
+for tx,ty,scale in [(-6,2.5,1.0),(-4.8,3.2,.78),(5.2,2.8,1.05),(7,3.1,.8)]:
+ cube("TREE_TRUNK",(tx,ty,1.15*scale),(.28*scale,.28*scale,2.3*scale),bark,.08)
+ for ox,oz,sz,leafmat in [(0,0,1.0,leaf),(-.48,.35,.72,leaf2),(.48,.4,.78,leaf)]:
+  ball("TREE_CROWN",(tx+ox*scale,ty,2.55*scale+oz*scale),(1.0*sz*scale,.62*sz*scale,.85*sz*scale),leafmat)
+# A simple park bench in the background.
+cube("BENCH_SEAT",(2.7,1.55,.72),(2.0,.48,.13),benchmat,.06)
+cube("BENCH_BACK",(2.7,1.78,1.15),(2.0,.13,.85),benchmat,.06)
+for bx in [1.9,3.5]:
+ cube("BENCH_LEG",(bx,1.55,.36),(.12,.16,.7),metal,.025)
+# Small flower beds along the edge of the path.
+for fx in [-5.0,-4.5,4.6,5.1]:
+ ball("FLOWER_CENTER",(fx,-1.45,.22),(.09,.09,.09),flower)
+ for j in range(5):
+  ang=j*math.tau/5
+  ball("FLOWER_PETAL",(fx+math.cos(ang)*.13,-1.45+math.sin(ang)*.13,.22),(.09,.07,.055),white)
+# A classic line-stickman: oversized round head, single thin-line torso,
+# simple line limbs. No torso volume, hip ball, bulky joints, hands or shoes.
+white=mat("Porcelain stickman",(.96,.97,.93),.42); ink=mat("Face ink",(.025,.035,.045),.5); nosemat=mat("Orange nose",(.92,.34,.12),.5)
+parts={"head":ball("HERO_HEAD",(0,0,2),(.34,.31,.36),white),"torso":seg("HERO_TORSO",white,.027)}
+# Face is deliberately simple, playful and readable at phone size.
+eye1=ball("HERO_EYE_LEFT",(-.13,-.292,2.07),(.065,.032,.075),ink)
+eye2=ball("HERO_EYE_RIGHT",(.13,-.292,2.035),(.045,.03,.052),ink)
+pupil1=ball("HERO_PUPIL_LEFT",(-.12,-.321,2.07),(.021,.012,.026),white)
+pupil2=ball("HERO_PUPIL_RIGHT",(.14,-.319,2.035),(.016,.01,.02),white)
+nose=ball("HERO_NOSE",(0,-.345,1.96),(.045,.052,.052),nosemat)
+mouth_curve=bpy.data.curves.new("HERO_CROOKED_SMILE","CURVE"); mouth_curve.dimensions="3D"; mouth_curve.bevel_depth=.014; mouth_curve.bevel_resolution=3
 sp=mouth_curve.splines.new("POLY"); sp.points.add(8)
 for i,pt in enumerate(sp.points):
- x=-.13+i*.0325; z=1.88+.055*(1-(x/.13)**2); pt.co=(x,-.322,z,1)
-mouth=bpy.data.objects.new("HERO_SMILE",mouth_curve); bpy.context.collection.objects.link(mouth); mouth.data.materials.append(black)
-# Keep facial features attached to the moving head rather than fixed in the room.
-for face_obj in [bpy.data.objects["HERO_EYE_LEFT"],bpy.data.objects["HERO_EYE_RIGHT"],bpy.data.objects["HERO_PUPIL_LEFT"],bpy.data.objects["HERO_PUPIL_RIGHT"],bpy.data.objects["HERO_NOSE"],mouth]:
- face_obj.parent=parts["head"]
- face_obj.matrix_parent_inverse=parts["head"].matrix_world.inverted()
-for n in ["armL1","armL2","armR1","armR2","legL1","legL2","legR1","legR2"]: parts[n]=seg("HERO_"+n,white,.035 if "arm" in n else .045)
-for n in ["handL","handR"]: parts[n]=ball("HERO_"+n,(0,0,0),(.12,.12,.12),black)
-for n in ["footL","footR"]: parts[n]=ball("HERO_"+n,(0,0,0),(.18,.23,.09),black)
+ xx=-.12+i*.03; zz=1.88+.045*(1-(xx/.12)**2)
+ pt.co=(xx,-.322,zz,1)
+mouth=bpy.data.objects.new("HERO_SMILE",mouth_curve); bpy.context.collection.objects.link(mouth); mouth.data.materials.append(ink)
+for face_obj in [eye1,eye2,pupil1,pupil2,nose,mouth]:
+ face_obj.parent=parts["head"]; face_obj.matrix_parent_inverse=parts["head"].matrix_world.inverted()
+for n in ["armL1","armL2","armR1","armR2","legL","legR"]:
+ parts[n]=seg("HERO_"+n,white,.024)
 def pose(f,x,phase,walking,raised=False):
- bob=.025*abs(math.sin(phase*2)) if walking else 0
- hipz=.93+bob; tz=1.3+bob
- keyball(parts["head"],(x,0,1.99+bob),f)
- keyball(parts["hip"],(x,0,hipz),f)
- putseg(parts["torso"],(x,0,tz+.18),(x,0,hipz+.10),f)
- putseg(parts["neck"],(x,0,tz+.16),(x,0,1.68+bob),f)
- # Alternating gait: left and right legs are half a cycle apart.
+ bob=.035*abs(math.sin(phase*2)) if walking else 0
+ shoulder_z=1.43+bob; hip_z=.78+bob
+ keyball(parts["head"],(x,0,2.02+bob),f)
+ putseg(parts["torso"],(x,0,shoulder_z),(x,0,hip_z),f)
  for side,sign in [("L",-1),("R",1)]:
   legphase=phase if side=="L" else phase+math.pi
-  leg_swing=.34*math.sin(legphase) if walking else 0
-  knee_lift=.24*max(0,math.sin(legphase)) if walking else 0
-  hip=(x+sign*.09,0,hipz-.02)
-  knee=(x+sign*.10+leg_swing*.48,0,.52+knee_lift*.45)
-  ankle=(x+sign*.10+leg_swing,0,.13+knee_lift)
-  putseg(parts["leg"+side+"1"],hip,knee,f)
-  putseg(parts["leg"+side+"2"],knee,ankle,f)
-  keyball(parts["foot"+side],(ankle[0]+.035,-.065,ankle[2]),f)
-  # Arms counter-swing against the legs for a natural walk.
-  arm_swing=-.25*math.sin(legphase) if walking else 0
-  shoulder=(x+sign*.13,0,tz+.13)
-  elbow=(x+sign*.22+arm_swing*.55,0,tz-.16)
-  hand=(x+sign*.24+arm_swing,0,tz-.42)
+  swing=.43*math.sin(legphase) if walking else 0
+  lift=.16*max(0,math.sin(legphase)) if walking else 0
+  hip=(x+sign*.035,0,hip_z)
+  ankle=(x+sign*.035+swing,0,.12+lift)
+  putseg(parts["leg"+side],hip,ankle,f)
+  arm_swing=-.32*math.sin(legphase) if walking else 0
+  shoulder=(x+sign*.055,0,shoulder_z-.02)
+  elbow=(x+sign*.18+arm_swing*.55,0,1.12+bob)
+  hand=(x+sign*.23+arm_swing,0,.96+bob)
   if raised and side=="R":
-   elbow=(x+.30,0,tz+.34); hand=(x+.48,-.02,tz+.62)
+   elbow=(x+.28,0,1.62); hand=(x+.45,-.01,1.82)
   putseg(parts["arm"+side+"1"],shoulder,elbow,f)
   putseg(parts["arm"+side+"2"],elbow,hand,f)
-  keyball(parts["hand"+side],hand,f)
 walkend=int(LAST*.60); stop=int(LAST*.72)
 for f in range(1,LAST+1,2):
  if f<=walkend: pose(f,-3.8+3.2*f/walkend,(f-1)*math.tau/(FPS*.78),True)
  elif f<=stop: pose(f,-.6,0,False)
  else: pose(f,-.6,0,False,True)
 pose(LAST,-.6,0,False,True)
-door.keyframe_insert(data_path="rotation_euler",frame=1); door.rotation_euler[2]=-.22; door.keyframe_insert(data_path="rotation_euler",frame=walkend)
 # Camera changes composition over the timeline
 bpy.ops.object.camera_add(location=(0,-12,4)); cam=bpy.context.object; cam.name="STICKLAB_CAMERA"; cam.data.lens=48; bpy.context.scene.camera=cam
 def camkey(f,loc,target,lens):
