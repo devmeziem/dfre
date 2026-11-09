@@ -19,100 +19,130 @@ def putseg(o,a,b,f):
  va=Vector(a); vb=Vector(b); d=vb-va; o.location=(va+vb)/2; o.rotation_euler=d.to_track_quat("Z","Y").to_euler(); o.scale.z=d.length
  o.keyframe_insert(data_path="location",frame=f); o.keyframe_insert(data_path="rotation_euler",frame=f); o.keyframe_insert(data_path="scale",frame=f)
 def keyball(o,loc,f): o.location=loc; o.keyframe_insert(data_path="location",frame=f)
-# Modern downtown street with tall skyscrapers on both sides.
-asphalt=mat("Dark city asphalt",(.105,.12,.14)); sidewalk=mat("Pale concrete sidewalk",(.48,.50,.50))
-curbmat=mat("Concrete curb",(.68,.68,.64)); tower_a=mat("Blue glass tower",(.18,.30,.39)); tower_b=mat("Warm stone tower",(.43,.43,.40))
-glass=mat("Blue reflective windows",(.12,.34,.48),.24); glass_lit=mat("Lit office windows",(.78,.68,.40),.3)
-steel=mat("Street metal",(.10,.13,.16)); whitepaint=mat("Road markings",(.88,.88,.82))
-sky=mat("Bright city sky",(.38,.64,.82))
-cube("CITY_STREET_GROUND",(0,0,-.22),(34,22,.38),asphalt)
-cube("LEFT_SIDEWALK",(0,-2.35,-.005),(34,1.45,.12),sidewalk,.06)
-cube("RIGHT_SIDEWALK",(0,2.35,-.005),(34,1.45,.12),sidewalk,.06)
-cube("LEFT_CURB",(0,-1.58,.04),(34,.13,.20),curbmat,.025)
-cube("RIGHT_CURB",(0,1.58,.04),(34,.13,.20),curbmat,.025)
-# Broken lane divider and a pedestrian crossing add clear street context.
-for xx in [-12,-8,-4,0,4,8,12]:
- cube("ROAD_LANE_DASH",(xx,0,.005),(2.0,.10,.018),whitepaint,.01)
-for j in range(7):
- cube("CROSSWALK_STRIPE",(-1.1+j*.36,-1.0,.012),(.19,.95,.02),whitepaint,.01)
-cube("CITY_SKY_BACKDROP",(0,8,8),(38,.25,22),sky)
-# Skyscraper facades frame the street while leaving the character visible.
+# Believable downtown avenue: a long road, raised pavements, street furniture
+# and layered buildings that recede toward a clear vanishing point.
+asphalt=mat("Deep charcoal road",(.12,.14,.16)); sidewalk=mat("Warm grey pavement",(.48,.49,.47))
+curbmat=mat("Pale stone curb",(.68,.68,.64)); tower_a=mat("Blue glass facade",(.19,.31,.39))
+tower_b=mat("Warm concrete facade",(.43,.42,.39)); glass=mat("Reflective blue windows",(.10,.28,.39),.22)
+glass_lit=mat("Warm office windows",(.78,.67,.43),.3); steel=mat("Street furniture metal",(.10,.12,.14))
+whitepaint=mat("Road paint",(.84,.85,.81)); sky=mat("Daylight sky",(.39,.65,.82))
+cube("CITY_ROAD",(0,6,-.23),(22,34,.42),asphalt)
+cube("LEFT_PAVEMENT",(-5.2,6,-.02),(2.1,34,.18),sidewalk,.08)
+cube("RIGHT_PAVEMENT",(5.2,6,-.02),(2.1,34,.18),sidewalk,.08)
+cube("LEFT_KERB",(-4.12,6,.035),(.16,34,.18),curbmat,.025)
+cube("RIGHT_KERB",(4.12,6,.035),(.16,34,.18),curbmat,.025)
+# Perspective lane markings and a proper zebra crossing in the foreground.
+for yy in [-2,2,6,10,14]:
+ cube("LANE_DASH_LEFT",(-.72,yy,.002),(.09,1.7,.018),whitepaint,.01)
+ cube("LANE_DASH_RIGHT",(.72,yy,.002),(.09,1.7,.018),whitepaint,.01)
+for j in range(9):
+ cube("ZEBRA_CROSSING",(-1.45+j*.36,-1.55,.015),(.20,1.05,.025),whitepaint,.01)
+# Tall buildings sit along both sides and progressively narrow toward the horizon.
 buildings=[
- (-11.0,5.0,5.0,3.8,12.5,tower_a),(-7.0,6.0,3.4,3.6,9.0,tower_b),
- (7.0,6.0,3.5,3.8,10.5,tower_a),(11.0,5.0,5.0,3.8,14.5,tower_b),
- (-15.5,8.0,3.4,3.4,8.0,tower_b),(15.5,8.0,3.4,3.4,9.0,tower_a)]
+ (-6.6,1.0,3.0,3.2,16.0,tower_a),(-6.2,7.0,2.6,3.0,12.0,tower_b),
+ (-7.3,13.0,2.4,2.8,9.0,tower_a),
+ (6.6,1.0,3.0,3.2,19.0,tower_b),(6.2,7.0,2.6,3.0,13.0,tower_a),
+ (7.3,13.0,2.4,2.8,10.0,tower_b),
+ (-9.0,5.0,2.2,3.0,11.0,tower_b),(9.0,5.0,2.2,3.0,14.0,tower_a)]
 for bi,(bx,by,bw,bd,bh,bmat) in enumerate(buildings):
- cube("SKYSCRAPER_%02d"%bi,(bx,by,bh/2),(bw,bd,bh),bmat,.10)
- # Repeated rows of reflective windows on the street-facing facade.
- cols=max(2,int(bw/.58)); rows=max(4,int(bh/.78))
+ cube("CITY_BUILDING_%02d"%bi,(bx,by,bh/2),(bw,bd,bh),bmat,.045)
+ # Recessed-looking vertical window grid on the street-facing wall.
+ cols=max(2,int(bw/.43)); rows=max(5,int(bh/.68))
  for row in range(rows):
-  z=.65+row*.72
+  z=.62+row*.64
   if z>bh-.25: continue
   for col in range(cols):
-   wx=bx-bw/2+.38+col*((bw-.76)/max(1,cols-1))
-   wm=glass_lit if (row*3+col+bi)%9==0 else glass
-   cube("SKYSCRAPER_WINDOW",(wx,by-bd/2-.018,z),(.27,.035,.40),wm,.018)
-# Streetlights on the sidewalks.
-for lx in [-9,-3,3,9]:
- cube("STREETLIGHT_POLE",(lx,-2.05,2.15),(.075,.075,4.3),steel,.025)
- cube("STREETLIGHT_ARM",(lx+.30,-2.05,4.22),(.65,.075,.075),steel,.025)
- ball("STREETLIGHT_LAMP",(lx+.60,-2.05,4.18),(.18,.13,.09),glass_lit)
-# A few traffic signals at the far crossing.
-cube("TRAFFIC_SIGNAL_POLE",(2.5,-1.45,2.0),(.09,.09,4.0),steel,.025)
-cube("TRAFFIC_SIGNAL_BOX",(2.5,-1.48,3.45),(.30,.20,.72),steel,.04)
-for zz,lightmat in [(3.66,mat("Signal red",(.8,.08,.05))),(3.45,mat("Signal amber",(.95,.55,.06))),(3.24,mat("Signal green",(.08,.65,.20)))]:
- ball("TRAFFIC_SIGNAL_LAMP",(2.5,-1.60,zz),(.075,.035,.075),lightmat)
-# A classic line-stickman: oversized round head, single thin-line torso,
-# simple line limbs. No torso volume, hip ball, bulky joints, hands or shoes.
-white=mat("Porcelain stickman",(.96,.97,.93),.42); ink=mat("Face ink",(.025,.035,.045),.5)
-parts={"head":ball("HERO_HEAD",(0,0,2),(.34,.31,.36),white),"torso":seg("HERO_TORSO",white,.027)}
-# Hand-drawn stickman face, following the supplied reference:
-# clean black ink strokes, expressive curved eyes and a clear open smile.
-def face_stroke(name, points, radius=.012):
- curve=bpy.data.curves.new(name,"CURVE"); curve.dimensions="3D"; curve.resolution_u=12
- curve.bevel_depth=radius; curve.bevel_resolution=3
- spline=curve.splines.new("POLY"); spline.points.add(len(points)-1)
- for i,(xx,yy,zz) in enumerate(points): spline.points[i].co=(xx,yy,zz,1)
- obj=bpy.data.objects.new(name,curve); bpy.context.collection.objects.link(obj); obj.data.materials.append(ink)
- obj.parent=parts["head"]; obj.matrix_parent_inverse=parts["head"].matrix_world.inverted()
- return obj
-# Happy, curved eyes (not bead-like robot eyes).
-face_stroke("HERO_EYE_LEFT",[(-.205,-.292,2.045),(-.18,-.307,2.09),(-.145,-.31,2.105),(-.11,-.307,2.09),(-.09,-.292,2.045)],.013)
-face_stroke("HERO_EYE_RIGHT",[(.09,-.292,2.045),(.115,-.307,2.09),(.15,-.31,2.105),(.185,-.307,2.09),(.205,-.292,2.045)],.013)
-# Soft expressive brows add the hand-drawn cartoon character.
-face_stroke("HERO_BROW_LEFT",[(-.205,-.286,2.15),(-.16,-.30,2.17),(-.11,-.286,2.15)],.009)
-face_stroke("HERO_BROW_RIGHT",[(.11,-.286,2.15),(.16,-.30,2.17),(.205,-.286,2.15)],.009)
-# Open cheerful mouth with a dark interior and a small white upper-teeth highlight.
-mouth_inner=ball("HERO_MOUTH_OPEN",(0,-.302,1.91),(.125,.027,.075),ink)
-mouth_inner.parent=parts["head"]; mouth_inner.matrix_parent_inverse=parts["head"].matrix_world.inverted()
-teeth=ball("HERO_SMILE_TEETH",(0,-.326,1.944),(.078,.012,.018),white)
-teeth.parent=parts["head"]; teeth.matrix_parent_inverse=parts["head"].matrix_world.inverted()
-# Tiny cheek marks keep the face warm and illustrated, not mechanical.
-face_stroke("HERO_CHEEK_LEFT",[(-.245,-.278,1.96),(-.225,-.29,1.945),(-.205,-.278,1.96)],.006)
-face_stroke("HERO_CHEEK_RIGHT",[(.205,-.278,1.96),(.225,-.29,1.945),(.245,-.278,1.96)],.006)
-
-for n in ["armL1","armL2","armR1","armR2","legL","legR"]:
- parts[n]=seg("HERO_"+n,white,.024)
+   wx=bx-bw/2+.28+col*((bw-.56)/max(1,cols-1))
+   wm=glass_lit if (row*5+col*3+bi)%13==0 else glass
+   cube("OFFICE_WINDOW",(wx,by-bd/2-.025,z),(.22,.045,.39),wm,.012)
+ # Roofline ledge gives each building a finished architectural silhouette.
+ cube("BUILDING_ROOFLINE",(bx,by,bh+.08),(bw+.12,bd+.12,.16),curbmat,.025)
+# Sidewalk streetlights and trees add familiar city scale.
+for side in [-1,1]:
+ for yy in [0,6,12]:
+  lx=side*4.65
+  cube("LAMP_POST",(lx,yy,2.2),(.065,.065,4.4),steel,.02)
+  cube("LAMP_ARM",(lx-side*.25,yy,4.28),(.55,.065,.065),steel,.02)
+  ball("LAMP_HEAD",(lx-side*.50,yy,4.25),(.18,.12,.08),glass_lit)
+# A few street trees in square pavement planters.
+for side in [-1,1]:
+ for yy in [3,10]:
+  tx=side*5.45
+  cube("TREE_PLANTER",(tx,yy,.10),(.95,.95,.20),curbmat,.05)
+  cube("STREET_TREE_TRUNK",(tx,yy,.95),(.16,.16,1.7),mat("Tree bark",(.25,.16,.10)),.035)
+  ball("STREET_TREE_CROWN",(tx,yy,2.05),(.72,.65,.9),mat("Street tree foliage",(.15,.34,.19)))
+# Traffic lights at the crossing.
+for side in [-1,1]:
+ tx=side*3.9
+ cube("SIGNAL_POLE",(tx,-1.0,1.8),(.08,.08,3.6),steel,.02)
+ cube("SIGNAL_BOX",(tx,-1.0,3.15),(.28,.20,.65),steel,.025)
+ for z,clr in [(3.34,mat("Red signal",(.8,.07,.04))),(3.15,mat("Amber signal",(.9,.48,.04))),(2.96,mat("Green signal",(.08,.55,.17)))]:
+  ball("SIGNAL_LENS",(tx,-1.12,z),(.065,.035,.065),clr)
+# The hero is deliberately 2D ink strokes: no mesh body, spheres, rods or cylinders.
+ink=mat("Black hand-drawn ink",(.012,.014,.018),.55)
+def stroke(name, radius=.010, cyclic=False):
+ cu=bpy.data.curves.new(name,"CURVE"); cu.dimensions="3D"; cu.resolution_u=1
+ cu.bevel_depth=radius; cu.bevel_resolution=2
+ sp=cu.splines.new("POLY"); sp.points.add(1); sp.use_cyclic_u=cyclic
+ ob=bpy.data.objects.new(name,cu); bpy.context.collection.objects.link(ob); ob.data.materials.append(ink)
+ return ob
+def setstroke(ob,pts,frame):
+ sp=ob.data.splines[0]
+ while len(sp.points)<len(pts): sp.points.add(1)
+ while len(sp.points)>len(pts): sp.points.remove(sp.points[-1])
+ for i,pnt in enumerate(pts):
+  sp.points[i].co=(pnt[0],pnt[1],pnt[2],1)
+  sp.points[i].keyframe_insert(data_path="co",frame=frame)
+# A slightly uneven head outline, drawn like a quick pen sketch.
+head=stroke("INK_HEAD_OUTLINE",.012,True)
+eyes_l=stroke("INK_EYE_LEFT",.010); eyes_r=stroke("INK_EYE_RIGHT",.010)
+brow_l=stroke("INK_BROW_LEFT",.008); brow_r=stroke("INK_BROW_RIGHT",.008)
+mouth=stroke("INK_SMILE",.012); cheek_l=stroke("INK_CHEEK_LEFT",.006); cheek_r=stroke("INK_CHEEK_RIGHT",.006)
+torso=stroke("INK_BODY",.011); arm_l=stroke("INK_ARM_LEFT",.010); arm_r=stroke("INK_ARM_RIGHT",.010)
+leg_l=stroke("INK_LEG_LEFT",.011); leg_r=stroke("INK_LEG_RIGHT",.011)
+hand_l=stroke("INK_HAND_LOOP_LEFT",.009,True); hand_r=stroke("INK_HAND_LOOP_RIGHT",.009,True)
+# Each line is redrawn at every keyframe, preserving the loose sketch aesthetic.
 def pose(f,x,phase,walking,raised=False):
  bob=.035*abs(math.sin(phase*2)) if walking else 0
- shoulder_z=1.43+bob; hip_z=.78+bob
- keyball(parts["head"],(x,0,2.02+bob),f)
- putseg(parts["torso"],(x,0,shoulder_z),(x,0,hip_z),f)
+ headz=2.02+bob; shoulder=headz-.48; hip=headz-1.20
+ def p(localx,z,y=-.18): return (x+localx,y,z)
+ # An intentionally imperfect hand-drawn circle, slightly lopsided.
+ outline=[]
+ for i in range(32):
+  t=math.tau*i/32
+  wobble=1+.035*math.sin(3*t+.4)+.018*math.sin(7*t)
+  outline.append(p(.34*math.cos(t)*wobble,headz+.36*math.sin(t)*wobble,-.20))
+ setstroke(head,outline+[outline[0]],f)
+ # Friendly cartoon face: curved eyes, uneven brows and a broad open smile.
+ setstroke(eyes_l,[p(-.20,headz+.055,-.225),p(-.17,headz+.105,-.23),p(-.13,headz+.10,-.23),p(-.10,headz+.045,-.225)],f)
+ setstroke(eyes_r,[p(.08,headz+.045,-.225),p(.115,headz+.105,-.23),p(.16,headz+.10,-.23),p(.195,headz+.035,-.225)],f)
+ setstroke(brow_l,[p(-.22,headz+.19,-.22),p(-.16,headz+.215,-.23),p(-.10,headz+.18,-.22)],f)
+ setstroke(brow_r,[p(.09,headz+.18,-.22),p(.15,headz+.21,-.23),p(.22,headz+.17,-.22)],f)
+ setstroke(mouth,[p(-.14,headz-.10,-.23),p(-.09,headz-.18,-.24),p(0,headz-.205,-.24),p(.09,headz-.17,-.24),p(.14,headz-.09,-.23)],f)
+ setstroke(cheek_l,[p(-.27,headz-.08,-.22),p(-.24,headz-.10,-.23),p(-.21,headz-.08,-.22)],f)
+ setstroke(cheek_r,[p(.21,headz-.08,-.22),p(.24,headz-.10,-.23),p(.27,headz-.08,-.22)],f)
+ setstroke(torso,[p(-.015,shoulder),p(.015,shoulder-.28),p(-.005,hip)],f)
  for side,sign in [("L",-1),("R",1)]:
-  legphase=phase if side=="L" else phase+math.pi
-  swing=.43*math.sin(legphase) if walking else 0
-  lift=.16*max(0,math.sin(legphase)) if walking else 0
-  hip=(x+sign*.035,0,hip_z)
-  ankle=(x+sign*.035+swing,0,.12+lift)
-  putseg(parts["leg"+side],hip,ankle,f)
-  arm_swing=-.32*math.sin(legphase) if walking else 0
-  shoulder=(x+sign*.055,0,shoulder_z-.02)
-  elbow=(x+sign*.18+arm_swing*.55,0,1.12+bob)
-  hand=(x+sign*.23+arm_swing,0,.96+bob)
+  lp=phase if side=="L" else phase+math.pi
+  swing=.42*math.sin(lp) if walking else 0
+  lift=.15*max(0,math.sin(lp)) if walking else 0
+  shoulder_pt=p(sign*.025,shoulder)
+  elbow=p(sign*(.20+.16*math.sin(lp+math.pi/2) if walking else .20),shoulder-.22)
+  hand=p(sign*(.24+swing),1.02+bob+lift)
   if raised and side=="R":
-   elbow=(x+.28,0,1.62); hand=(x+.45,-.01,1.82)
-  putseg(parts["arm"+side+"1"],shoulder,elbow,f)
-  putseg(parts["arm"+side+"2"],elbow,hand,f)
+   elbow=p(.28,shoulder+.13); hand=p(.48,shoulder+.42)
+  arm=arm_l if side=="L" else arm_r
+  loop=hand_l if side=="L" else hand_r
+  setstroke(arm,[shoulder_pt,elbow,hand],f)
+  # Irregular little loop at the end of each arm, never a perfect ball.
+  hx,hy,hz=hand
+  looppts=[(hx+dx,hy-.012,hz+dz) for dx,dz in [(-.075,.00),(-.055,.055),(-.01,.072),(.045,.045),(.067,-.005),(.035,-.052),(-.025,-.06),(-.065,-.03)]]
+  setstroke(loop,looppts,f)
+  hippt=p(-.015,hip)
+  ankle=p(sign*.02+swing,.10+lift)
+  knee=p(sign*(.11+swing*.48),.46+lift*.45)
+  leg=leg_l if side=="L" else leg_r
+  setstroke(leg,[hippt,knee,ankle],f)
 walkend=int(LAST*.60); stop=int(LAST*.72)
 for f in range(1,LAST+1,2):
  if f<=walkend: pose(f,-3.8+3.2*f/walkend,(f-1)*math.tau/(FPS*.78),True)
@@ -134,5 +164,5 @@ for obj in scene.objects:
   for fc in obj.animation_data.action.fcurves:
    for kp in fc.keyframe_points: kp.interpolation="BEZIER"
 os.makedirs(os.path.dirname(os.path.abspath(A.output)),exist_ok=True)
-print("STICKLAB_RENDER_START",json.dumps({"frames":LAST,"resolution":[W,H],"environment":"sunny neighborhood park","motion":"walk, stop, wave"}),flush=True)
+print("STICKLAB_RENDER_START",json.dumps({"frames":LAST,"resolution":[W,H],"environment":"downtown avenue with skyscrapers","motion":"walk, stop, wave"}),flush=True)
 bpy.ops.render.render(animation=True); print("STICKLAB_RENDER_COMPLETE",A.output,flush=True)
