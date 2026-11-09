@@ -44,20 +44,31 @@ for fx in [-5.0,-4.5,4.6,5.1]:
 # simple line limbs. No torso volume, hip ball, bulky joints, hands or shoes.
 white=mat("Porcelain stickman",(.96,.97,.93),.42); ink=mat("Face ink",(.025,.035,.045),.5); nosemat=mat("Orange nose",(.92,.34,.12),.5)
 parts={"head":ball("HERO_HEAD",(0,0,2),(.34,.31,.36),white),"torso":seg("HERO_TORSO",white,.027)}
-# Face is deliberately simple, playful and readable at phone size.
-eye1=ball("HERO_EYE_LEFT",(-.13,-.292,2.07),(.065,.032,.075),ink)
-eye2=ball("HERO_EYE_RIGHT",(.13,-.292,2.035),(.045,.03,.052),ink)
-pupil1=ball("HERO_PUPIL_LEFT",(-.12,-.321,2.07),(.021,.012,.026),white)
-pupil2=ball("HERO_PUPIL_RIGHT",(.14,-.319,2.035),(.016,.01,.02),white)
-nose=ball("HERO_NOSE",(0,-.345,1.96),(.045,.052,.052),nosemat)
-mouth_curve=bpy.data.curves.new("HERO_CROOKED_SMILE","CURVE"); mouth_curve.dimensions="3D"; mouth_curve.bevel_depth=.014; mouth_curve.bevel_resolution=3
-sp=mouth_curve.splines.new("POLY"); sp.points.add(8)
-for i,pt in enumerate(sp.points):
- xx=-.12+i*.03; zz=1.88+.045*(1-(xx/.12)**2)
- pt.co=(xx,-.322,zz,1)
-mouth=bpy.data.objects.new("HERO_SMILE",mouth_curve); bpy.context.collection.objects.link(mouth); mouth.data.materials.append(ink)
-for face_obj in [eye1,eye2,pupil1,pupil2,nose,mouth]:
- face_obj.parent=parts["head"]; face_obj.matrix_parent_inverse=parts["head"].matrix_world.inverted()
+# Hand-drawn stickman face, following the supplied reference:
+# clean black ink strokes, expressive curved eyes and a clear open smile.
+def face_stroke(name, points, radius=.012):
+ curve=bpy.data.curves.new(name,"CURVE"); curve.dimensions="3D"; curve.resolution_u=12
+ curve.bevel_depth=radius; curve.bevel_resolution=3
+ spline=curve.splines.new("POLY"); spline.points.add(len(points)-1)
+ for i,(xx,yy,zz) in enumerate(points): spline.points[i].co=(xx,yy,zz,1)
+ obj=bpy.data.objects.new(name,curve); bpy.context.collection.objects.link(obj); obj.data.materials.append(ink)
+ obj.parent=parts["head"]; obj.matrix_parent_inverse=parts["head"].matrix_world.inverted()
+ return obj
+# Happy, curved eyes (not bead-like robot eyes).
+face_stroke("HERO_EYE_LEFT",[(-.205,-.292,2.045),(-.18,-.307,2.09),(-.145,-.31,2.105),(-.11,-.307,2.09),(-.09,-.292,2.045)],.013)
+face_stroke("HERO_EYE_RIGHT",[(.09,-.292,2.045),(.115,-.307,2.09),(.15,-.31,2.105),(.185,-.307,2.09),(.205,-.292,2.045)],.013)
+# Soft expressive brows add the hand-drawn cartoon character.
+face_stroke("HERO_BROW_LEFT",[(-.205,-.286,2.15),(-.16,-.30,2.17),(-.11,-.286,2.15)],.009)
+face_stroke("HERO_BROW_RIGHT",[(.11,-.286,2.15),(.16,-.30,2.17),(.205,-.286,2.15)],.009)
+# Open cheerful mouth with a dark interior and a small white upper-teeth highlight.
+mouth_inner=ball("HERO_MOUTH_OPEN",(0,-.302,1.91),(.125,.027,.075),ink)
+mouth_inner.parent=parts["head"]; mouth_inner.matrix_parent_inverse=parts["head"].matrix_world.inverted()
+teeth=ball("HERO_SMILE_TEETH",(0,-.326,1.944),(.078,.012,.018),white)
+teeth.parent=parts["head"]; teeth.matrix_parent_inverse=parts["head"].matrix_world.inverted()
+# Tiny cheek marks keep the face warm and illustrated, not mechanical.
+face_stroke("HERO_CHEEK_LEFT",[(-.245,-.278,1.96),(-.225,-.29,1.945),(-.205,-.278,1.96)],.006)
+face_stroke("HERO_CHEEK_RIGHT",[(.205,-.278,1.96),(.225,-.29,1.945),(.245,-.278,1.96)],.006)
+
 for n in ["armL1","armL2","armR1","armR2","legL","legR"]:
  parts[n]=seg("HERO_"+n,white,.024)
 def pose(f,x,phase,walking,raised=False):
