@@ -1,0 +1,37 @@
+{
+  "project": {
+    "id": "learnlab-ice-floats-001",
+    "title": "Why Does Ice Float?",
+    "topic": "Water density and hydrogen bonding",
+    "format": "youtube_short",
+    "aspect_ratio": "9:16",
+    "width": 720,
+    "height": 1280,
+    "fps": 24,
+    "voice": "en-US-AriaNeural",
+    "voice_rate": "-5%",
+    "visual_style": "clean educational 3D infographic; a floating ice cube, liquid-water molecule cluster, open ice lattice, high-contrast labels; no external assets"
+  },
+  "lesson": {
+    "learning_goal": "Explain that hydrogen bonds arrange frozen water molecules farther apart, making ice less dense than liquid water so it floats.",
+    "source_url": "https://openstax.org/books/biology-2e/pages/2-2-water",
+    "source_note": "OpenStax Biology 2e, section 2.2: hydrogen bonds form a crystalline structure in ice; molecules are farther apart than in liquid water, so ice is less dense and floats.",
+    "narration_beats": [
+      {
+        "text": "Most substances get denser when they freeze. Water is a surprising exception."
+      },
+      {
+        "text": "In liquid water, molecules move around as hydrogen bonds form and break."
+      },
+      {
+        "text": "As water freezes, hydrogen bonds hold molecules in an open crystal structure."
+      },
+      {
+        "text": "That structure takes up more space, making ice less dense than liquid water."
+      },
+      {
+        "text": "So ice floats. On lakes, surface ice can also insulate the water below."
+      }
+    ]
+  }
+}
