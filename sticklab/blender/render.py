@@ -20,7 +20,7 @@ def putseg(o,a,b,f):
  o.keyframe_insert(data_path="location",frame=f); o.keyframe_insert(data_path="rotation_euler",frame=f); o.keyframe_insert(data_path="scale",frame=f)
 def keyball(o,loc,f): o.location=loc; o.keyframe_insert(data_path="location",frame=f)
 # Sunny neighborhood park environment — completely replaces the indoor room.
-grass=mat("Fresh park grass",(.19,.38,.20)); pathmat=mat("Warm park path",(.72,.61,.43)); bark=mat("Tree bark",(.25,.13,.07)); leaf=mat("Leaf canopy",(.12,.31,.13)); leaf2=mat("Sunlit leaves",(.28,.46,.17)); sky=mat("Soft blue sky",(.42,.68,.82)); benchmat=mat("Park bench wood",(.43,.22,.10)); metal=mat("Bench dark metal",(.10,.13,.13)); flower=mat("Flower yellow",(.95,.65,.12))
+grass=mat("Fresh park grass",(.19,.38,.20)); pathmat=mat("Warm park path",(.72,.61,.43)); bark=mat("Tree bark",(.25,.13,.07)); leaf=mat("Leaf canopy",(.12,.31,.13)); leaf2=mat("Sunlit leaves",(.28,.46,.17)); sky=mat("Soft blue sky",(.42,.68,.82)); benchmat=mat("Park bench wood",(.43,.22,.10)); metal=mat("Bench dark metal",(.10,.13,.13)); flower=mat("Flower yellow",(.95,.65,.12)); petalmat=mat("Flower petals",(.94,.88,.68))
 cube("PARK_GROUND",(0,0,-.18),(30,18,.3),grass)
 cube("WALKING_PATH",(0,-.15,-.015),(14,2.25,.08),pathmat,.18)
 cube("DISTANT_SKY_BACKDROP",(0,5.8,5),(30,.25,10),sky)
@@ -39,7 +39,7 @@ for fx in [-5.0,-4.5,4.6,5.1]:
  ball("FLOWER_CENTER",(fx,-1.45,.22),(.09,.09,.09),flower)
  for j in range(5):
   ang=j*math.tau/5
-  ball("FLOWER_PETAL",(fx+math.cos(ang)*.13,-1.45+math.sin(ang)*.13,.22),(.09,.07,.055),white)
+  ball("FLOWER_PETAL",(fx+math.cos(ang)*.13,-1.45+math.sin(ang)*.13,.22),(.09,.07,.055),petalmat)
 # A classic line-stickman: oversized round head, single thin-line torso,
 # simple line limbs. No torso volume, hip ball, bulky joints, hands or shoes.
 white=mat("Porcelain stickman",(.96,.97,.93),.42); ink=mat("Face ink",(.025,.035,.045),.5); nosemat=mat("Orange nose",(.92,.34,.12),.5)
@@ -101,5 +101,5 @@ for obj in scene.objects:
   for fc in obj.animation_data.action.fcurves:
    for kp in fc.keyframe_points: kp.interpolation="BEZIER"
 os.makedirs(os.path.dirname(os.path.abspath(A.output)),exist_ok=True)
-print("STICKLAB_RENDER_START",json.dumps({"frames":LAST,"resolution":[W,H],"environment":"furnished living room","motion":"walk, stop, wave"}),flush=True)
+print("STICKLAB_RENDER_START",json.dumps({"frames":LAST,"resolution":[W,H],"environment":"sunny neighborhood park","motion":"walk, stop, wave"}),flush=True)
 bpy.ops.render.render(animation=True); print("STICKLAB_RENDER_COMPLETE",A.output,flush=True)
