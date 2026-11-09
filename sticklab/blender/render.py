@@ -50,6 +50,10 @@ sp=mouth_curve.splines.new("POLY"); sp.points.add(8)
 for i,pt in enumerate(sp.points):
  x=-.13+i*.0325; z=1.88+.055*(1-(x/.13)**2); pt.co=(x,-.322,z,1)
 mouth=bpy.data.objects.new("HERO_SMILE",mouth_curve); bpy.context.collection.objects.link(mouth); mouth.data.materials.append(black)
+# Keep facial features attached to the moving head rather than fixed in the room.
+for face_obj in [bpy.data.objects["HERO_EYE_LEFT"],bpy.data.objects["HERO_EYE_RIGHT"],bpy.data.objects["HERO_PUPIL_LEFT"],bpy.data.objects["HERO_PUPIL_RIGHT"],bpy.data.objects["HERO_NOSE"],mouth]:
+ face_obj.parent=parts["head"]
+ face_obj.matrix_parent_inverse=parts["head"].matrix_world.inverted()
 for n in ["armL1","armL2","armR1","armR2","legL1","legL2","legR1","legR2"]: parts[n]=seg("HERO_"+n,white,.035 if "arm" in n else .045)
 for n in ["handL","handR"]: parts[n]=ball("HERO_"+n,(0,0,0),(.12,.12,.12),black)
 for n in ["footL","footR"]: parts[n]=ball("HERO_"+n,(0,0,0),(.18,.23,.09),black)
