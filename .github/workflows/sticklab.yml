@@ -39,7 +39,7 @@ jobs:
         run: python3 scripts/make_narration.py "$SEED_FILE" output/sticklab
       - name: Assemble final video
         run: |
-          ffmpeg -y -i output/sticklab/scene-silent.mp4 -i output/sticklab/narration.mp3             -vf "subtitles=output/sticklab/captions.srt:force_style='FontName=DejaVu Sans,FontSize=18,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101010,BorderStyle=1,Outline=3,Shadow=1,Alignment=2,MarginV=145'"             -map 0:v:0 -map 1:a:0 -c:v libx264 -preset veryfast -crf 21 -pix_fmt yuv420p             -c:a aac -b:a 160k -shortest -movflags +faststart output/sticklab/sticklab-test.mp4
+          ffmpeg -y -i output/sticklab/scene-silent.mp4 -i output/sticklab/narration.mp3             -vf "subtitles=output/sticklab/captions.srt:force_style='FontName=DejaVu Sans,FontSize=11,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101010,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=42'"             -map 0:v:0 -map 1:a:0 -c:v libx264 -preset veryfast -crf 21 -pix_fmt yuv420p             -c:a aac -b:a 160k -shortest -movflags +faststart output/sticklab/sticklab-test.mp4
       - name: Validate final video
         run: |
           test -s output/sticklab/sticklab-test.mp4
