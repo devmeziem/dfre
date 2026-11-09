@@ -19,27 +19,49 @@ def putseg(o,a,b,f):
  va=Vector(a); vb=Vector(b); d=vb-va; o.location=(va+vb)/2; o.rotation_euler=d.to_track_quat("Z","Y").to_euler(); o.scale.z=d.length
  o.keyframe_insert(data_path="location",frame=f); o.keyframe_insert(data_path="rotation_euler",frame=f); o.keyframe_insert(data_path="scale",frame=f)
 def keyball(o,loc,f): o.location=loc; o.keyframe_insert(data_path="location",frame=f)
-# Sunny neighborhood park environment — completely replaces the indoor room.
-grass=mat("Fresh park grass",(.19,.38,.20)); pathmat=mat("Warm park path",(.72,.61,.43)); bark=mat("Tree bark",(.25,.13,.07)); leaf=mat("Leaf canopy",(.12,.31,.13)); leaf2=mat("Sunlit leaves",(.28,.46,.17)); sky=mat("Soft blue sky",(.42,.68,.82)); benchmat=mat("Park bench wood",(.43,.22,.10)); metal=mat("Bench dark metal",(.10,.13,.13)); flower=mat("Flower yellow",(.95,.65,.12)); petalmat=mat("Flower petals",(.94,.88,.68))
-cube("PARK_GROUND",(0,0,-.18),(30,18,.3),grass)
-cube("WALKING_PATH",(0,-.15,-.015),(14,2.25,.08),pathmat,.18)
-cube("DISTANT_SKY_BACKDROP",(0,5.8,5),(30,.25,10),sky)
-# Trees frame the scene without crowding the walking area.
-for tx,ty,scale in [(-6,2.5,1.0),(-4.8,3.2,.78),(5.2,2.8,1.05),(7,3.1,.8)]:
- cube("TREE_TRUNK",(tx,ty,1.15*scale),(.28*scale,.28*scale,2.3*scale),bark,.08)
- for ox,oz,sz,leafmat in [(0,0,1.0,leaf),(-.48,.35,.72,leaf2),(.48,.4,.78,leaf)]:
-  ball("TREE_CROWN",(tx+ox*scale,ty,2.55*scale+oz*scale),(1.0*sz*scale,.62*sz*scale,.85*sz*scale),leafmat)
-# A simple park bench in the background.
-cube("BENCH_SEAT",(2.7,1.55,.72),(2.0,.48,.13),benchmat,.06)
-cube("BENCH_BACK",(2.7,1.78,1.15),(2.0,.13,.85),benchmat,.06)
-for bx in [1.9,3.5]:
- cube("BENCH_LEG",(bx,1.55,.36),(.12,.16,.7),metal,.025)
-# Small flower beds along the edge of the path.
-for fx in [-5.0,-4.5,4.6,5.1]:
- ball("FLOWER_CENTER",(fx,-1.45,.22),(.09,.09,.09),flower)
- for j in range(5):
-  ang=j*math.tau/5
-  ball("FLOWER_PETAL",(fx+math.cos(ang)*.13,-1.45+math.sin(ang)*.13,.22),(.09,.07,.055),petalmat)
+# Modern downtown street with tall skyscrapers on both sides.
+asphalt=mat("Dark city asphalt",(.105,.12,.14)); sidewalk=mat("Pale concrete sidewalk",(.48,.50,.50))
+curbmat=mat("Concrete curb",(.68,.68,.64)); tower_a=mat("Blue glass tower",(.18,.30,.39)); tower_b=mat("Warm stone tower",(.43,.43,.40))
+glass=mat("Blue reflective windows",(.12,.34,.48),.24); glass_lit=mat("Lit office windows",(.78,.68,.40),.3)
+steel=mat("Street metal",(.10,.13,.16)); whitepaint=mat("Road markings",(.88,.88,.82))
+sky=mat("Bright city sky",(.38,.64,.82))
+cube("CITY_STREET_GROUND",(0,0,-.22),(34,22,.38),asphalt)
+cube("LEFT_SIDEWALK",(0,-2.35,-.005),(34,1.45,.12),sidewalk,.06)
+cube("RIGHT_SIDEWALK",(0,2.35,-.005),(34,1.45,.12),sidewalk,.06)
+cube("LEFT_CURB",(0,-1.58,.04),(34,.13,.20),curbmat,.025)
+cube("RIGHT_CURB",(0,1.58,.04),(34,.13,.20),curbmat,.025)
+# Broken lane divider and a pedestrian crossing add clear street context.
+for xx in [-12,-8,-4,0,4,8,12]:
+ cube("ROAD_LANE_DASH",(xx,0,.005),(2.0,.10,.018),whitepaint,.01)
+for j in range(7):
+ cube("CROSSWALK_STRIPE",(-1.1+j*.36,-1.0,.012),(.19,.95,.02),whitepaint,.01)
+cube("CITY_SKY_BACKDROP",(0,8,8),(38,.25,22),sky)
+# Skyscraper facades frame the street while leaving the character visible.
+buildings=[
+ (-11.0,5.0,5.0,3.8,12.5,tower_a),(-7.0,6.0,3.4,3.6,9.0,tower_b),
+ (7.0,6.0,3.5,3.8,10.5,tower_a),(11.0,5.0,5.0,3.8,14.5,tower_b),
+ (-15.5,8.0,3.4,3.4,8.0,tower_b),(15.5,8.0,3.4,3.4,9.0,tower_a)]
+for bi,(bx,by,bw,bd,bh,bmat) in enumerate(buildings):
+ cube("SKYSCRAPER_%02d"%bi,(bx,by,bh/2),(bw,bd,bh),bmat,.10)
+ # Repeated rows of reflective windows on the street-facing facade.
+ cols=max(2,int(bw/.58)); rows=max(4,int(bh/.78))
+ for row in range(rows):
+  z=.65+row*.72
+  if z>bh-.25: continue
+  for col in range(cols):
+   wx=bx-bw/2+.38+col*((bw-.76)/max(1,cols-1))
+   wm=glass_lit if (row*3+col+bi)%9==0 else glass
+   cube("SKYSCRAPER_WINDOW",(wx,by-bd/2-.018,z),(.27,.035,.40),wm,.018)
+# Streetlights on the sidewalks.
+for lx in [-9,-3,3,9]:
+ cube("STREETLIGHT_POLE",(lx,-2.05,2.15),(.075,.075,4.3),steel,.025)
+ cube("STREETLIGHT_ARM",(lx+.30,-2.05,4.22),(.65,.075,.075),steel,.025)
+ ball("STREETLIGHT_LAMP",(lx+.60,-2.05,4.18),(.18,.13,.09),glass_lit)
+# A few traffic signals at the far crossing.
+cube("TRAFFIC_SIGNAL_POLE",(2.5,-1.45,2.0),(.09,.09,4.0),steel,.025)
+cube("TRAFFIC_SIGNAL_BOX",(2.5,-1.48,3.45),(.30,.20,.72),steel,.04)
+for zz,lightmat in [(3.66,mat("Signal red",(.8,.08,.05))),(3.45,mat("Signal amber",(.95,.55,.06))),(3.24,mat("Signal green",(.08,.65,.20)))]:
+ ball("TRAFFIC_SIGNAL_LAMP",(2.5,-1.60,zz),(.075,.035,.075),lightmat)
 # A classic line-stickman: oversized round head, single thin-line torso,
 # simple line limbs. No torso volume, hip ball, bulky joints, hands or shoes.
 white=mat("Porcelain stickman",(.96,.97,.93),.42); ink=mat("Face ink",(.025,.035,.045),.5)
