@@ -21,7 +21,7 @@ def putseg(o,a,b,f):
 def keyball(o,loc,f): o.location=loc; o.keyframe_insert(data_path="location",frame=f)
 # Believable downtown avenue: a long road, raised pavements, street furniture
 # and layered buildings that recede toward a clear vanishing point.
-asphalt=mat("Deep charcoal road",(.12,.14,.16)); sidewalk=mat("Warm grey pavement",(.48,.49,.47))
+asphalt=mat("Sunlit medium grey asphalt",(.43,.45,.46)); sidewalk=mat("Light concrete pavement",(.68,.69,.66))
 curbmat=mat("Pale stone curb",(.68,.68,.64)); tower_a=mat("Blue glass facade",(.19,.31,.39))
 tower_b=mat("Warm concrete facade",(.43,.42,.39)); glass=mat("Reflective blue windows",(.10,.28,.39),.22)
 glass_lit=mat("Warm office windows",(.78,.67,.43),.3); steel=mat("Street furniture metal",(.10,.12,.14))
@@ -79,8 +79,8 @@ for side in [-1,1]:
  for z,clr in [(3.34,mat("Red signal",(.8,.07,.04))),(3.15,mat("Amber signal",(.9,.48,.04))),(2.96,mat("Green signal",(.08,.55,.17)))]:
   ball("SIGNAL_LENS",(tx,-1.12,z),(.065,.035,.065),clr)
 # The hero is deliberately 2D ink strokes: no mesh body, spheres, rods or cylinders.
-ink=mat("Black hand-drawn ink",(.012,.014,.018),.55)
-def stroke(name, radius=.010, cyclic=False):
+ink=mat("Bold black hand-drawn ink",(.003,.004,.006),.45)
+def stroke(name, radius=.026, cyclic=False):
  cu=bpy.data.curves.new(name,"CURVE"); cu.dimensions="3D"; cu.resolution_u=1
  cu.bevel_depth=radius; cu.bevel_resolution=2
  sp=cu.splines.new("POLY"); sp.points.add(1); sp.use_cyclic_u=cyclic
@@ -94,13 +94,13 @@ def setstroke(ob,pts,frame):
   sp.points[i].co=(pnt[0],pnt[1],pnt[2],1)
   sp.points[i].keyframe_insert(data_path="co",frame=frame)
 # A slightly uneven head outline, drawn like a quick pen sketch.
-head=stroke("INK_HEAD_OUTLINE",.012,True)
-eyes_l=stroke("INK_EYE_LEFT",.010); eyes_r=stroke("INK_EYE_RIGHT",.010)
-brow_l=stroke("INK_BROW_LEFT",.008); brow_r=stroke("INK_BROW_RIGHT",.008)
-mouth=stroke("INK_SMILE",.012); cheek_l=stroke("INK_CHEEK_LEFT",.006); cheek_r=stroke("INK_CHEEK_RIGHT",.006)
-torso=stroke("INK_BODY",.011); arm_l=stroke("INK_ARM_LEFT",.010); arm_r=stroke("INK_ARM_RIGHT",.010)
-leg_l=stroke("INK_LEG_LEFT",.011); leg_r=stroke("INK_LEG_RIGHT",.011)
-hand_l=stroke("INK_HAND_LOOP_LEFT",.009,True); hand_r=stroke("INK_HAND_LOOP_RIGHT",.009,True)
+head=stroke("INK_HEAD_OUTLINE",.027,True)
+eyes_l=stroke("INK_EYE_LEFT",.021); eyes_r=stroke("INK_EYE_RIGHT",.021)
+brow_l=stroke("INK_BROW_LEFT",.018); brow_r=stroke("INK_BROW_RIGHT",.018)
+mouth=stroke("INK_SMILE",.024); cheek_l=stroke("INK_CHEEK_LEFT",.014); cheek_r=stroke("INK_CHEEK_RIGHT",.014)
+torso=stroke("INK_BODY",.024); arm_l=stroke("INK_ARM_LEFT",.022); arm_r=stroke("INK_ARM_RIGHT",.022)
+leg_l=stroke("INK_LEG_LEFT",.024); leg_r=stroke("INK_LEG_RIGHT",.024)
+hand_l=stroke("INK_HAND_LOOP_LEFT",.019,True); hand_r=stroke("INK_HAND_LOOP_RIGHT",.019,True)
 # Each line is redrawn at every keyframe, preserving the loose sketch aesthetic.
 def pose(f,x,phase,walking,raised=False):
  bob=.035*abs(math.sin(phase*2)) if walking else 0
@@ -145,15 +145,15 @@ def pose(f,x,phase,walking,raised=False):
   setstroke(leg,[hippt,knee,ankle],f)
 walkend=int(LAST*.60); stop=int(LAST*.72)
 for f in range(1,LAST+1,2):
- if f<=walkend: pose(f,-3.8+3.2*f/walkend,(f-1)*math.tau/(FPS*.78),True)
+ if f<=walkend: pose(f,-1.35+1.0*f/walkend,(f-1)*math.tau/(FPS*.78),True)
  elif f<=stop: pose(f,-.6,0,False)
  else: pose(f,-.6,0,False,True)
-pose(LAST,-.6,0,False,True)
+pose(LAST,-.35,0,False,True)
 # Camera changes composition over the timeline
-bpy.ops.object.camera_add(location=(0,-12,4)); cam=bpy.context.object; cam.name="STICKLAB_CAMERA"; cam.data.lens=48; bpy.context.scene.camera=cam
+bpy.ops.object.camera_add(location=(0,-12,4)); cam=bpy.context.object; cam.name="STICKLAB_CAMERA"; cam.data.lens=38; bpy.context.scene.camera=cam
 def camkey(f,loc,target,lens):
  cam.location=loc; aim(cam,target); cam.data.lens=lens; cam.keyframe_insert(data_path="location",frame=f); cam.keyframe_insert(data_path="rotation_euler",frame=f); cam.data.keyframe_insert(data_path="lens",frame=f)
-camkey(1,(0,-12,4),(-.4,1,1.15),48); camkey(int(LAST*.42),(-.4,-10.5,3.4),(-.8,.7,1.1),52); camkey(int(LAST*.72),(-1.2,-8.5,3),(-.6,.4,1.25),58); camkey(LAST,(-1.2,-8.5,3),(-.6,.4,1.25),58)
+camkey(1,(0,-13,4.2),(0,1,1.35),38); camkey(int(LAST*.42),(0,-12,4.0),(0,1,1.3),38); camkey(int(LAST*.72),(0,-12,4.0),(0,1,1.3),38); camkey(LAST,(0,-12,4.0),(0,1,1.3),38)
 world=bpy.context.scene.world; world.color=(.16,.16,.16)
 bpy.ops.object.light_add(type="AREA",location=(-4,-5,7)); l=bpy.context.object; l.data.energy=1050; l.data.size=6; aim(l,(0,1,1))
 bpy.ops.object.light_add(type="AREA",location=(4,2,5)); l=bpy.context.object; l.data.energy=750; l.data.size=5; aim(l,(0,0,1))
