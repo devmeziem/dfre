@@ -1,0 +1,88 @@
+name: Newsdesk 3D Test
+
+# Isolated 9jaBeacon-style desk render. Manual only. Does not touch D1 or Nigerian-blog.
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: "Seed JSON path"
+        required: true
+        default: "newsdesk/seeds/test_main_ada.json"
+
+permissions:
+  contents: read
+
+jobs:
+  render-newsdesk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SEED_FILE: ${{ github.event.inputs.seed || 'newsdesk/seeds/test_main_ada.json' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Blender + FFmpeg + Edge TTS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender ffmpeg fonts-dejavu-core libegl1 libgl1 libxrender1 libxi6 libxkbcommon0
+          python3 -m pip install --user --upgrade edge-tts
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          blender --version | head -1
+
+      - name: Validate seed + character + environment JSON
+        run: |
+          python3 -m json.tool "$SEED_FILE" > /tmp/seed.json
+          CHAR=$(python3 -c "import json; print(json.load(open('/tmp/seed.json'))['character'])")
+          ENV=$(python3 -c "import json; print(json.load(open('/tmp/seed.json'))['environment'])")
+          python3 -m json.tool "$CHAR" > /dev/null
+          python3 -m json.tool "$ENV" > /dev/null
+          echo "OK seed=$SEED_FILE char=$CHAR env=$ENV"
+
+      - name: Render silent desk scene (Blender Eevee)
+        run: |
+          mkdir -p output/newsdesk
+          blender --background --factory-startup --python newsdesk/blender/render_newsdesk.py -- \
+            --seed "$SEED_FILE" \
+            --output output/newsdesk/scene-silent.mp4
+
+      - name: Generate narration (Edge TTS)
+        run: |
+          python3 <<'PY'
+          import json, asyncio, os, pathlib
+          seed = json.load(open(os.environ["SEED_FILE"]))
+          nar = seed.get("narration", {})
+          text = nar.get("text") or seed.get("headline", "9jaBeacon newsdesk test.")
+          voice = nar.get("voice", "en-NG-EzinneNeural")
+          out = pathlib.Path("output/newsdesk")
+          out.mkdir(parents=True, exist_ok=True)
+          async def main():
+              import edge_tts
+              await edge_tts.Communicate(text, voice).save(str(out / "narration.mp3"))
+              # simple single-cue srt
+              (out / "captions.srt").write_text(
+                  "1\n00:00:00,000 --> 00:00:11,500\n" + text[:120] + "\n",
+                  encoding="utf-8",
+              )
+          asyncio.run(main())
+          print("narration ok", voice)
+          PY
+
+      - name: Assemble final MP4
+        run: |
+          ffmpeg -y -i output/newsdesk/scene-silent.mp4 -i output/newsdesk/narration.mp3 \
+            -vf "subtitles=output/newsdesk/captions.srt:force_style='FontName=DejaVu Sans,FontSize=16,PrimaryColour=&H00FFFFFF,OutlineColour=&H00101010,BorderStyle=1,Outline=2,Shadow=1,Alignment=2,MarginV=48'" \
+            -map 0:v:0 -map 1:a:0 -c:v libx264 -preset veryfast -crf 22 -pix_fmt yuv420p \
+            -c:a aac -b:a 160k -shortest -movflags +faststart \
+            output/newsdesk/newsdesk-test.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/newsdesk/newsdesk-test.mp4
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: newsdesk-3d-test
+          path: |
+            output/newsdesk/newsdesk-test.mp4
+            output/newsdesk/narration.mp3
+            output/newsdesk/captions.srt
+          if-no-files-found: error
+          retention-days: 7
