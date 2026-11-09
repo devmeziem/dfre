@@ -1,0 +1,10 @@
+{
+  "id": "studio_main",
+  "name": "Main evening desk",
+  "wall": [0.06, 0.10, 0.16],
+  "accent": [0.10, 0.55, 0.45],
+  "desk": [0.12, 0.14, 0.18],
+  "boards": 3,
+  "ticker": { "bg": [0.75, 0.08, 0.10], "text": [1, 1, 1] },
+  "lighting": "neutral_broadcast"
+}
