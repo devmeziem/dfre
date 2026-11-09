@@ -38,21 +38,49 @@ bpy.ops.mesh.primitive_cone_add(vertices=24,radius1=.24,radius2=.16,depth=.42,lo
 for i in range(7):
  a=i*math.tau/7; leaf=ball("PLANT_LEAF",(4.8+math.cos(a)*.18,2.7,.75+math.sin(a)*.13),(.12,.07,.48),green); leaf.rotation_euler[1]=-math.cos(a)*.45
 # Rounded white 3D stickman, individually animated limb segments
-parts={"head":ball("HERO_HEAD",(0,0,2),(.34,.31,.36),white),"torso":ball("HERO_TORSO",(0,0,1.3),(.28,.2,.48),white),"hip":ball("HERO_HIP",(0,0,.93),(.23,.18,.18),black)}
-for ex in [-.12,.12]: ball("HERO_EYE",(ex,-.285,2.02),(.045,.025,.055),black)
-for n in ["armL1","armL2","armR1","armR2","legL1","legL2","legR1","legR2"]: parts[n]=seg("HERO_"+n,white,.085 if "arm" in n else .105)
+parts={"head":ball("HERO_HEAD",(0,0,2),(.34,.31,.36),white),"torso":seg("HERO_TORSO",white,.065),"neck":seg("HERO_NECK",white,.045),"hip":ball("HERO_HIP",(0,0,.93),(.23,.18,.18),black)}
+ball("HERO_EYE_LEFT",(-.13,-.292,2.06),(.075,.035,.09),black)
+ball("HERO_EYE_RIGHT",(.13,-.292,2.03),(.045,.03,.055),black)
+ball("HERO_PUPIL_LEFT",(-.12,-.325,2.06),(.025,.012,.035),white)
+ball("HERO_PUPIL_RIGHT",(.14,-.321,2.03),(.018,.012,.025),white)
+ball("HERO_NOSE",(0,-.355,1.96),(.065,.075,.075),orange)
+# Curved, expressive smile on the front of the face
+mouth_curve=bpy.data.curves.new("HERO_FUNNY_SMILE","CURVE"); mouth_curve.dimensions="3D"; mouth_curve.bevel_depth=.018; mouth_curve.bevel_resolution=3
+sp=mouth_curve.splines.new("POLY"); sp.points.add(8)
+for i,pt in enumerate(sp.points):
+ x=-.13+i*.0325; z=1.88+.055*(1-(x/.13)**2); pt.co=(x,-.322,z,1)
+mouth=bpy.data.objects.new("HERO_SMILE",mouth_curve); bpy.context.collection.objects.link(mouth); mouth.data.materials.append(black)
+for n in ["armL1","armL2","armR1","armR2","legL1","legL2","legR1","legR2"]: parts[n]=seg("HERO_"+n,white,.035 if "arm" in n else .045)
 for n in ["handL","handR"]: parts[n]=ball("HERO_"+n,(0,0,0),(.12,.12,.12),black)
 for n in ["footL","footR"]: parts[n]=ball("HERO_"+n,(0,0,0),(.18,.23,.09),black)
 def pose(f,x,phase,walking,raised=False):
- bob=.035*abs(math.sin(phase*2)) if walking else 0; hipz=.93+bob; tz=1.3+bob
- keyball(parts["head"],(x,0,1.99+bob),f); keyball(parts["torso"],(x,0,tz),f); keyball(parts["hip"],(x,0,hipz),f)
- stride=.38*math.sin(phase) if walking else 0; knee=.1+.12*max(0,math.cos(phase)) if walking else 0
- for side,s in [("L",-1),("R",1)]:
-  shoulder=(x+s*.24,0,tz+.18); elbow=(x+s*.36+stride*.45,0,tz-.16+(.08*math.cos(phase) if walking else 0)); hand=(x+s*.4+stride*.8,0,tz-.48+(.08*math.cos(phase) if walking else 0))
-  if raised and side=="R": elbow=(x+.43,0,tz+.48); hand=(x+.68,-.02,tz+.78)
-  putseg(parts["arm"+side+"1"],shoulder,elbow,f); putseg(parts["arm"+side+"2"],elbow,hand,f); keyball(parts["hand"+side],hand,f)
-  hip=(x+s*.13,0,hipz-.08); fx=x+s*.13+stride; kp=(x+s*.14+stride*.5,0,.52+knee); foot=(fx,-.02,.13+max(0,math.sin(phase))*.12)
-  putseg(parts["leg"+side+"1"],hip,kp,f); putseg(parts["leg"+side+"2"],kp,foot,f); keyball(parts["foot"+side],(foot[0]+.06,-.06,foot[2]),f)
+ bob=.025*abs(math.sin(phase*2)) if walking else 0
+ hipz=.93+bob; tz=1.3+bob
+ keyball(parts["head"],(x,0,1.99+bob),f)
+ keyball(parts["hip"],(x,0,hipz),f)
+ putseg(parts["torso"],(x,0,tz+.18),(x,0,hipz+.10),f)
+ putseg(parts["neck"],(x,0,tz+.16),(x,0,1.68+bob),f)
+ # Alternating gait: left and right legs are half a cycle apart.
+ for side,sign in [("L",-1),("R",1)]:
+  legphase=phase if side=="L" else phase+math.pi
+  leg_swing=.34*math.sin(legphase) if walking else 0
+  knee_lift=.24*max(0,math.sin(legphase)) if walking else 0
+  hip=(x+sign*.09,0,hipz-.02)
+  knee=(x+sign*.10+leg_swing*.48,0,.52+knee_lift*.45)
+  ankle=(x+sign*.10+leg_swing,0,.13+knee_lift)
+  putseg(parts["leg"+side+"1"],hip,knee,f)
+  putseg(parts["leg"+side+"2"],knee,ankle,f)
+  keyball(parts["foot"+side],(ankle[0]+.035,-.065,ankle[2]),f)
+  # Arms counter-swing against the legs for a natural walk.
+  arm_swing=-.25*math.sin(legphase) if walking else 0
+  shoulder=(x+sign*.13,0,tz+.13)
+  elbow=(x+sign*.22+arm_swing*.55,0,tz-.16)
+  hand=(x+sign*.24+arm_swing,0,tz-.42)
+  if raised and side=="R":
+   elbow=(x+.30,0,tz+.34); hand=(x+.48,-.02,tz+.62)
+  putseg(parts["arm"+side+"1"],shoulder,elbow,f)
+  putseg(parts["arm"+side+"2"],elbow,hand,f)
+  keyball(parts["hand"+side],hand,f)
 walkend=int(LAST*.60); stop=int(LAST*.72)
 for f in range(1,LAST+1,2):
  if f<=walkend: pose(f,-3.8+3.2*f/walkend,(f-1)*math.tau/(FPS*.78),True)
