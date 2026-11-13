@@ -28,7 +28,7 @@ jobs:
             echo "::error::Upload Presenter.glb to presenter-lab/assets/Presenter.glb before running this workflow."
             exit 1
           }
-      - name: Render turntable preview
+      - name: Deep inspect presenter rig and face\n        run: |\n          blender --background --factory-startup --python presenter-lab/blender/inspect_model.py\n      - name: Render turntable preview
         run: |
           mkdir -p output/presenter
           blender --background --factory-startup --python presenter-lab/blender/render_preview.py -- \
