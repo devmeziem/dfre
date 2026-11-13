@@ -1,66 +1,52 @@
-name: Presenter Lab Preview
-
+name: Presenter Facial Rig
 on:
   workflow_dispatch:
   push:
     branches: [presenter-lab-preview]
     paths:
-      - "presenter-lab/**"
+      - "presenter-lab/blender/build_facial_rig.py"
+      - "presenter-lab/assets/Presenter.glb"
       - ".github/workflows/presenter-lab.yml"
 
 permissions:
   contents: read
 
 jobs:
-  render-presenter:
+  build-facial-rig:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
-      - name: Install Blender and FFmpeg
+      - name: Install Blender
         run: |
           sudo apt-get update
-          sudo apt-get install -y blender ffmpeg python3-numpy libegl1 libgl1 libxrender1 libxi6 libxkbcommon0
-          blender --background --factory-startup --python-expr "import numpy; print('NumPy', numpy.__version__)"
+          sudo apt-get install -y blender libegl1 libgl1 libxrender1 libxi6 libxkbcommon0
       - name: Check character asset
-        run: |
-          test -s presenter-lab/assets/Presenter.glb || {
-            echo "::error::Upload Presenter.glb to presenter-lab/assets/Presenter.glb before running this workflow."
-            exit 1
-          }
-      - name: Deep inspect presenter rig and face
+        run: test -s presenter-lab/assets/Presenter.glb
+      - name: Build facial controls and preview stills
         run: |
           mkdir -p output/presenter
-          blender --background --factory-startup --python presenter-lab/blender/inspect_model.py
-      - name: Inspect presenter face geometry
-        run: |
-          blender --background --factory-startup --python presenter-lab/blender/inspect_face.py
-      - name: Build and render facial controls
-        run: |
           blender --background --factory-startup --python presenter-lab/blender/build_facial_rig.py
-      - name: Render turntable preview
+      - name: Validate facial rig outputs
         run: |
-          mkdir -p output/presenter
-          blender --background --factory-startup --python presenter-lab/blender/render_preview.py -- \
-            --asset presenter-lab/assets/Presenter.glb \
-            --output output/presenter/presenter-turntable.mp4 \
-            --report output/presenter/presenter-report.json
-      - name: Render presenter motion test
-        run: |
-          blender --background --factory-startup --python presenter-lab/blender/render_motion_test.py -- \
-            --asset presenter-lab/assets/Presenter.glb \
-            --output output/presenter/presenter-motion-test.mp4
-      - name: Validate outputs
-        run: |
-          test -s output/presenter/presenter-motion-test.mp4
-          test -s output/presenter/presenter-animation-report.json
-          test -s output/presenter/presenter-turntable.mp4
-          test -s output/presenter/presenter-report.json
-          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/presenter/presenter-turntable.mp4
-      - name: Upload preview
+          test -s output/presenter/Presenter_Facial_Rig.blend
+          test -s output/presenter/Presenter_Facial_Rig.glb
+          test -s output/presenter/facial-controls-report.json
+          test -s output/presenter/facial-frame-01.png
+          test -s output/presenter/facial-frame-12.png
+          test -s output/presenter/facial-frame-42.png
+          python3 - <<'PY'
+          import json
+          p='output/presenter/facial-controls-report.json'
+          data=json.load(open(p))
+          expected={'Blink_L','Blink_R','Smile','Mouth_Open','Brow_Raise'}
+          assert expected.issubset(set(data['controls'])), data
+          print('Validated facial controls:', ', '.join(data['controls']))
+          PY
+      - name: Upload facial rig
         uses: actions/upload-artifact@v4
         with:
-          name: presenter-turntable-preview
+          name: presenter-facial-rig
           path: output/presenter/
           if-no-files-found: error
-          retention-days: 7
+          retention-days: 14
