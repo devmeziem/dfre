@@ -35,6 +35,9 @@ jobs:
       - name: Inspect presenter face geometry
         run: |
           blender --background --factory-startup --python presenter-lab/blender/inspect_face.py
+      - name: Build and render facial controls
+        run: |
+          blender --background --factory-startup --python presenter-lab/blender/build_facial_rig.py
       - name: Render turntable preview
         run: |
           mkdir -p output/presenter
