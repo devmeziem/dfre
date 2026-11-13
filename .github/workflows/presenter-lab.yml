@@ -2,6 +2,11 @@ name: Presenter Lab Preview
 
 on:
   workflow_dispatch:
+  push:
+    branches: [presenter-lab-preview]
+    paths:
+      - "presenter-lab/**"
+      - ".github/workflows/presenter-lab.yml"
 
 permissions:
   contents: read
