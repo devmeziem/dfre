@@ -12,7 +12,7 @@ mesh=next((o for o in scene.objects if o.type=="MESH" and o.find_armature()),Non
 if arm is None or mesh is None: raise RuntimeError("Presenter skinned mesh/armature not found")
 for o in list(scene.objects):
     if o.type=="MESH" and o!=mesh and not o.find_armature(): bpy.data.objects.remove(o,do_unlink=True)
-# Face-space bounds from head-weighted vertices. The diagnostic confirmed the face looks toward -Y.
+# Face-space bounds from head-weighted vertices. Diagnostic render confirms the face looks toward -Y; front mask is measured from the frontmost head vertices.
 head_group=mesh.vertex_groups.get("mixamorig:Head")
 if head_group is None: raise RuntimeError("Head vertex group missing")
 head_index=head_group.index
