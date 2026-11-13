@@ -42,7 +42,11 @@ jobs:
           data=json.load(open(p))
           expected={'Blink_L','Blink_R','Smile','Mouth_Open','Brow_Raise'}
           assert expected.issubset(set(data['controls'])), data
-          assert all(data['affected_vertices'][k] >= 8 for k in expected), data['affected_vertices']\n          assert all(data['max_world_delta'][k] >= 0.0001 for k in expected), data['max_world_delta']\n          assert len(data['preview_frames']) == 4, data['preview_frames']\n          print('Validated visible facial geometry:', data['affected_vertices'])\n          print('Morph displacement:', data['max_world_delta'])
+          assert all(data['affected_vertices'][k] >= 8 for k in expected), data['affected_vertices']
+          assert all(data['max_world_delta'][k] >= 0.0001 for k in expected), data['max_world_delta']
+          assert len(data['preview_frames']) == 4, data['preview_frames']
+          print('Validated visible facial geometry:', data['affected_vertices'])
+          print('Morph displacement:', data['max_world_delta'])
           PY
       - name: Upload facial rig
         uses: actions/upload-artifact@v4
