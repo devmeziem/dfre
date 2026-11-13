@@ -32,6 +32,9 @@ jobs:
         run: |
           mkdir -p output/presenter
           blender --background --factory-startup --python presenter-lab/blender/inspect_model.py
+      - name: Inspect presenter face geometry
+        run: |
+          blender --background --factory-startup --python presenter-lab/blender/inspect_face.py
       - name: Render turntable preview
         run: |
           mkdir -p output/presenter
