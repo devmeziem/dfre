@@ -70,8 +70,8 @@ floor.data.materials.append(floor_mat)
 world = bpy.context.scene.world or bpy.data.worlds.new("Presenter Studio")
 bpy.context.scene.world = world
 world.use_nodes = True
-world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.012, 0.018, 0.03, 1)
-world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.35
+world.node_tree.nodes["Background"].inputs["Color"].default_value = (0.006, 0.009, 0.016, 1)
+world.node_tree.nodes["Background"].inputs["Strength"].default_value = 0.12
 
 def area(name, loc, energy, size, target):
     bpy.ops.object.light_add(type="AREA", location=loc)
@@ -83,9 +83,9 @@ def area(name, loc, energy, size, target):
     light.rotation_euler = (Vector(target)-light.location).to_track_quat("-Z", "Y").to_euler()
 
 target = (center.x, center.y, center.z)
-area("KEY_SOFTBOX", (center.x-height*1.2, center.y-height*1.8, center.z+height*1.1), 1100, height*1.0, target)
-area("FILL_SOFTBOX", (center.x+height*1.5, center.y-height*1.0, center.z+height*0.25), 700, height*1.2, target)
-area("RIM_LIGHT", (center.x, center.y+height*1.2, center.z+height*0.9), 1250, height*0.8, target)
+area("KEY_SOFTBOX", (center.x-height*1.2, center.y-height*1.8, center.z+height*1.1), 380, height*1.0, target)
+area("FILL_SOFTBOX", (center.x+height*1.5, center.y-height*1.0, center.z+height*0.25), 180, height*1.2, target)
+area("RIM_LIGHT", (center.x, center.y+height*1.2, center.z+height*0.9), 320, height*0.8, target)
 
 bpy.ops.object.camera_add(location=(center.x, center.y-height*2.8, center.z+height*0.06))
 camera = bpy.context.object
@@ -113,7 +113,9 @@ scene.render.ffmpeg.codec = "H264"
 scene.render.ffmpeg.constant_rate_factor = "MEDIUM"
 scene.render.ffmpeg.ffmpeg_preset = "REALTIME"
 scene.render.filepath = output
-scene.view_settings.view_transform = "Standard"
+scene.view_settings.view_transform = "AgX"
+scene.view_settings.exposure = -0.8
+scene.view_settings.gamma = 1.0
 scene.render.image_settings.color_mode = "RGB"
 scene.camera.data.dof.use_dof = False
 os.makedirs(os.path.dirname(output), exist_ok=True)
