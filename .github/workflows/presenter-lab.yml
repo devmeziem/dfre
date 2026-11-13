@@ -1,0 +1,48 @@
+name: Presenter Lab Preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [presenter-lab-preview]
+    paths:
+      - "presenter-lab/**"
+      - ".github/workflows/presenter-lab.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  render-presenter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender and FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y blender ffmpeg libegl1 libgl1 libxrender1 libxi6 libxkbcommon0
+      - name: Check character asset
+        run: |
+          test -s presenter-lab/assets/Presenter.glb || {
+            echo "::error::Upload Presenter.glb to presenter-lab/assets/Presenter.glb before running this workflow."
+            exit 1
+          }
+      - name: Render turntable preview
+        run: |
+          mkdir -p output/presenter
+          blender --background --factory-startup --python presenter-lab/blender/render_preview.py -- \
+            --asset presenter-lab/assets/Presenter.glb \
+            --output output/presenter/presenter-turntable.mp4 \
+            --report output/presenter/presenter-report.json
+      - name: Validate outputs
+        run: |
+          test -s output/presenter/presenter-turntable.mp4
+          test -s output/presenter/presenter-report.json
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 output/presenter/presenter-turntable.mp4
+      - name: Upload preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: presenter-turntable-preview
+          path: output/presenter/
+          if-no-files-found: error
+          retention-days: 7
