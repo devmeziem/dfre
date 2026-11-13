@@ -39,7 +39,7 @@ def gauss(x,z,cx,cz,sx,sz):
 for i,(v,p) in enumerate(zip(verts,world)):
     if not any(g.group==head_index and g.weight>0.15 for g in v.groups): continue
     x,y,z=p.x,p.y,p.z
-    front=max(0.0,min(1.0,(front_y+0.045-y)/0.018))
+    front=max(0.0,min(1.0,(front_y+0.035-y)/0.035))
     if front<=0: continue
     # Eye patches: gently compress vertical eye geometry to create blink morphs.
     for side,cx,keyname in (("L",-0.025,"Blink_L"),("R",0.025,"Blink_R")):
@@ -48,18 +48,18 @@ for i,(v,p) in enumerate(zip(verts,world)):
             delta=Vector((0,0,(0.907-z)*0.88*w))
             keys[keyname].data[i].co += inv @ delta
     # Smile: lift the mouth corners and subtly raise the central upper lip.
-    mouth=gauss(x,z,0.0,0.846,0.024,0.009)*front
-    corner=abs(x)/0.024
+    mouth=gauss(x,z,0.010,0.801,0.026,0.009)*front
+    corner=abs(x-0.010)/0.026
     if mouth>0.015:
         dz=(0.003+0.009*corner)*mouth
         keys["Smile"].data[i].co += inv @ Vector((0,-0.001*mouth,dz))
     # Mouth-open morph: separate upper/lower lip regions vertically.
-    mw=gauss(x,z,0.0,0.846,0.022,0.010)*front
+    mw=gauss(x,z,0.010,0.801,0.025,0.012)*front
     if mw>0.015:
-        dz=(z-0.846)*0.85*mw
+        dz=(z-0.801)*1.35*mw
         keys["Mouth_Open"].data[i].co += inv @ Vector((0,-0.002*mw,dz))
     # Raise eyebrows without affecting the hairline.
-    bw=(gauss(x,z,-0.025,0.934,0.016,0.006)+gauss(x,z,0.025,0.934,0.016,0.006))*front
+    bw=(gauss(x,z,-0.016,0.897,0.020,0.007)+gauss(x,z,0.036,0.897,0.020,0.007))*front
     if bw>0.015:
         keys["Brow_Raise"].data[i].co += inv @ Vector((0,0,0.009*bw))
 # Animate a short test: blink, smile, talk/open-close, brow raise.
@@ -100,7 +100,7 @@ scene.render.engine="BLENDER_EEVEE_NEXT" if "BLENDER_EEVEE_NEXT" in bpy.types.Re
 scene.render.resolution_x=768; scene.render.resolution_y=768; scene.render.resolution_percentage=100
 scene.render.image_settings.file_format="PNG"; scene.render.image_settings.color_mode="RGBA"
 scene.view_settings.view_transform="AgX"; scene.camera.data.dof.use_dof=False
-frames=[1,12,16,30,42,54,60]
+frames=[1,12,42]
 for frame in frames:
     scene.frame_set(frame)
     scene.render.filepath=os.path.join(OUT,"facial-frame-%02d.png"%frame)
@@ -111,6 +111,6 @@ bpy.ops.object.select_all(action="DESELECT")
 for o in (arm,mesh): o.select_set(True)
 bpy.context.view_layer.objects.active=arm
 bpy.ops.export_scene.gltf(filepath=os.path.join(OUT,"Presenter_Facial_Rig.glb"),export_format="GLB",use_selection=True,export_morph=True)
-report={"asset":ASSET,"face_is_original_sculpted_mesh":True,"controls":list(keys.keys()),"animated_test_frames":frames,"head_vertex_count":len(face),"front_surface_y":front_y,"note":"Facial morph controls added to original head mesh; inspect preview frames before production lip-sync tuning."}
+report={"asset":ASSET,"face_is_original_sculpted_mesh":True,"controls":list(keys.keys()),"animated_test_frames":frames,"head_vertex_count":len(face),"front_surface_y":front_y,"note":"Facial morph controls added to original head mesh; lip-sync viseme expansion is a later stage."}
 with open(os.path.join(OUT,"facial-controls-report.json"),"w") as f: json.dump(report,f,indent=2)
 print("PRESENTER_FACIAL_RIG_COMPLETE",json.dumps(report),flush=True)
