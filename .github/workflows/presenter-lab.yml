@@ -41,8 +41,8 @@ jobs:
             --report output/presenter/presenter-report.json
       - name: Render presenter motion test
         run: |
-          blender --background --factory-startup --python presenter-lab/blender/render_motion_test.py -- \\
-            --asset presenter-lab/assets/Presenter.glb \\
+          blender --background --factory-startup --python presenter-lab/blender/render_motion_test.py -- \
+            --asset presenter-lab/assets/Presenter.glb \
             --output output/presenter/presenter-motion-test.mp4
       - name: Validate outputs
         run: |
