@@ -20,7 +20,8 @@ jobs:
       - name: Install Blender and FFmpeg
         run: |
           sudo apt-get update
-          sudo apt-get install -y blender ffmpeg libegl1 libgl1 libxrender1 libxi6 libxkbcommon0
+          sudo apt-get install -y blender ffmpeg python3-numpy libegl1 libgl1 libxrender1 libxi6 libxkbcommon0
+          blender --background --factory-startup --python-expr "import numpy; print('NumPy', numpy.__version__)"
       - name: Check character asset
         run: |
           test -s presenter-lab/assets/Presenter.glb || {
